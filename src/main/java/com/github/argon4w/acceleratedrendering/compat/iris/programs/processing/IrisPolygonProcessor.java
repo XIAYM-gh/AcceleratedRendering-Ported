@@ -10,38 +10,38 @@ import net.minecraft.resources.ResourceLocation;
 
 public class IrisPolygonProcessor implements IPolygonProcessor {
 
-	private final IPolygonProcessor			parent;
-	private final VertexFormat.Mode			mode;
-	private final IPolygonProgramDispatcher	dispatcher;
-	private final IExtraVertexData			extraVertexData;
+    private final IPolygonProcessor parent;
+    private final VertexFormat.Mode mode;
+    private final IPolygonProgramDispatcher dispatcher;
+    private final IExtraVertexData extraVertexData;
 
-	public IrisPolygonProcessor(
-			IPolygonProcessor	parent,
-			VertexFormat		vertexFormat,
-			VertexFormat.Mode	mode,
-			ResourceLocation	key
-	) {
-		this.parent				= parent;
-		this.mode				= mode;
-		this.dispatcher			= new FixedPolygonProgramDispatcher	(mode, key);
-		this.extraVertexData	= new IrisExtraVertexData			(vertexFormat);
-	}
+    public IrisPolygonProcessor(
+            IPolygonProcessor parent,
+            VertexFormat vertexFormat,
+            VertexFormat.Mode mode,
+            ResourceLocation key
+    ) {
+        this.parent = parent;
+        this.mode = mode;
+        this.dispatcher = new FixedPolygonProgramDispatcher(mode, key);
+        this.extraVertexData = new IrisExtraVertexData(vertexFormat);
+    }
 
-	@Override
-	public IPolygonProgramDispatcher select(VertexFormat.Mode mode) {
-		return		IrisCompatFeature	.isEnabled()
-				&&	IrisCompatFeature	.isPolygonProcessingEnabled()
-				&&	this.mode			.equals(mode)
-				?	dispatcher
-				:	parent.select(mode);
-	}
+    @Override
+    public IPolygonProgramDispatcher select(VertexFormat.Mode mode) {
+        return IrisCompatFeature.isEnabled()
+                && IrisCompatFeature.isPolygonProcessingEnabled()
+                && this.mode.equals(mode)
+                ? dispatcher
+                : parent.select(mode);
+    }
 
-	@Override
-	public IExtraVertexData getExtraVertex(VertexFormat.Mode mode) {
-		return		IrisCompatFeature	.isEnabled()
-				&&	IrisCompatFeature	.isPolygonProcessingEnabled()
-				&&	this.mode			.equals(mode)
-				?	extraVertexData
-				:	parent.getExtraVertex(mode);
-	}
+    @Override
+    public IExtraVertexData getExtraVertex(VertexFormat.Mode mode) {
+        return IrisCompatFeature.isEnabled()
+                && IrisCompatFeature.isPolygonProcessingEnabled()
+                && this.mode.equals(mode)
+                ? extraVertexData
+                : parent.getExtraVertex(mode);
+    }
 }

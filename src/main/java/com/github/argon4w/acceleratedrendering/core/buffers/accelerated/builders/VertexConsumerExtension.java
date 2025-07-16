@@ -5,11 +5,11 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 
 public class VertexConsumerExtension {
 
-	public static IAcceleratedVertexConsumer getAccelerated(VertexConsumer in) {
-		return (IAcceleratedVertexConsumer) in;
-	}
+    public static IAcceleratedVertexConsumer getAccelerated(VertexConsumer in) {
+        return (IAcceleratedVertexConsumer) in;
+    }
 
-	public static IAccelerationHolder getHolder(VertexConsumer in) {
-		return (IAccelerationHolder) in;
-	}
+    public static IAccelerationHolder getHolder(VertexConsumer in) {
+        return (IAccelerationHolder) in;
+    }
 }

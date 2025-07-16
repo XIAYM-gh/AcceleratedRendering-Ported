@@ -4,5 +4,5 @@ import com.github.argon4w.acceleratedrendering.core.buffers.accelerated.builders
 
 public interface IPolygonProgramDispatcher {
 
-	int dispatch(AcceleratedBufferBuilder builder);
+    int dispatch(AcceleratedBufferBuilder builder);
 }

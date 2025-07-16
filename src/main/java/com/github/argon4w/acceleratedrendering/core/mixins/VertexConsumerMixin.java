@@ -8,9 +8,9 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(VertexConsumer.class)
 public interface VertexConsumerMixin extends IAcceleratedVertexConsumer {
 
-	@Unique
-	@Override
-	default boolean isAccelerated() {
-		return false;
-	}
+    @Unique
+    @Override
+    default boolean isAccelerated() {
+        return false;
+    }
 }

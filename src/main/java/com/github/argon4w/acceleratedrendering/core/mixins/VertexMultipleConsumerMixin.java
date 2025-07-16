@@ -16,51 +16,54 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @ExtensionMethod(VertexConsumerExtension.class)
-@Mixin			(targets = "com.mojang.blaze3d.vertex.VertexMultiConsumer$Multiple")
+@Mixin(targets = "com.mojang.blaze3d.vertex.VertexMultiConsumer$Multiple")
 public class VertexMultipleConsumerMixin implements IAcceleratedVertexConsumer {
 
-	@Shadow @Final private	VertexConsumer[]	delegates;
+    @Shadow
+    @Final
+    private VertexConsumer[] delegates;
 
-	@Unique private			boolean				accelerated = true;
+    @Unique
+    private boolean accelerated = true;
 
-	@Inject(method = "<init>", at = @At("TAIL"))
-	public void constructor(VertexConsumer[] delegates, CallbackInfo ci) {
-		for (var delegate : delegates) {
-			accelerated = accelerated && delegate
-					.getAccelerated	()
-					.isAccelerated	();
-		}
-	}
+    @Inject(method = "<init>", at = @At("TAIL"))
+    public void constructor(VertexConsumer[] delegates, CallbackInfo ci) {
+        for (var delegate : delegates) {
+            accelerated = accelerated && delegate
+                    .getAccelerated()
+                    .isAccelerated();
+        }
+    }
 
-	@Unique
-	@Override
-	public boolean isAccelerated() {
-		return accelerated;
-	}
+    @Unique
+    @Override
+    public boolean isAccelerated() {
+        return accelerated;
+    }
 
-	@Unique
-	@Override
-	public <T>  void doRender(
-			IAcceleratedRenderer<T>	renderer,
-			T						context,
-			Matrix4f				transform,
-			Matrix3f				normal,
-			int						light,
-			int						overlay,
-			int						color
-	) {
-		for (var delegate : delegates) {
-			delegate
-					.getAccelerated	()
-					.doRender		(
-							renderer,
-							context,
-							transform,
-							normal,
-							light,
-							overlay,
-							color
-					);
-		}
-	}
+    @Unique
+    @Override
+    public <T> void doRender(
+            IAcceleratedRenderer<T> renderer,
+            T context,
+            Matrix4f transform,
+            Matrix3f normal,
+            int light,
+            int overlay,
+            int color
+    ) {
+        for (var delegate : delegates) {
+            delegate
+                    .getAccelerated()
+                    .doRender(
+                            renderer,
+                            context,
+                            transform,
+                            normal,
+                            light,
+                            overlay,
+                            color
+                    );
+        }
+    }
 }

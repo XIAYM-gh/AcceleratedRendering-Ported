@@ -34,153 +34,156 @@ import java.util.List;
 import java.util.Map;
 
 @ExtensionMethod(VertexConsumerExtension.class)
-@Mixin			(SimpleBakedModel		.class)
+@Mixin(SimpleBakedModel.class)
 public abstract class SimpleBakedModelMixin implements IAcceleratedBakedModel, IAcceleratedRenderer<AcceleratedItemRenderContext> {
 
-	@Shadow public abstract List<BakedQuad> getQuads(BlockState pState, Direction pDirection, RandomSource pRandom);
+    @Unique
+    private final Map<IBufferGraph, Int2ObjectMap<IMesh>> meshes = new Object2ObjectOpenHashMap<>();
 
-	@Unique private final Map<IBufferGraph, Int2ObjectMap<IMesh>> meshes = new Object2ObjectOpenHashMap<>();
+    @Shadow
+    public abstract List<BakedQuad> getQuads(BlockState pState, Direction pDirection, RandomSource pRandom);
 
-	@Unique
-	@Override
-	public void renderItemFast(
-			ItemStack					itemStack,
-			PoseStack					poseStack,
-			IAcceleratedVertexConsumer	extension,
-			int							combinedLight,
-			int							combinedOverlay
-	) {
-		PoseStack.Pose pose = poseStack.last();
+    @Unique
+    @Override
+    public void renderItemFast(
+            ItemStack itemStack,
+            PoseStack poseStack,
+            IAcceleratedVertexConsumer extension,
+            int combinedLight,
+            int combinedOverlay
+    ) {
+        PoseStack.Pose pose = poseStack.last();
 
-		extension.doRender(
-				this,
-				new AcceleratedItemRenderContext(
-						itemStack,
-						null,
-						null
-				),
-				pose.pose(),
-				pose.normal(),
-				combinedLight,
-				combinedOverlay,
-				-1
-		);
-	}
+        extension.doRender(
+                this,
+                new AcceleratedItemRenderContext(
+                        itemStack,
+                        null,
+                        null
+                ),
+                pose.pose(),
+                pose.normal(),
+                combinedLight,
+                combinedOverlay,
+                -1
+        );
+    }
 
-	@Unique
-	@Override
-	public void render(
-			VertexConsumer					vertexConsumer,
-			AcceleratedItemRenderContext	context,
-			Matrix4f						transform,
-			Matrix3f						normal,
-			int								light,
-			int								overlay,
-			int								color
-	) {
-		var itemStack	= context		.getItemStack	();
-		var itemColor	= context		.getItemColor	();
-		var extension	= vertexConsumer.getAccelerated	();
-		var layers		= meshes		.get			(extension);
+    @Unique
+    @Override
+    public void render(
+            VertexConsumer vertexConsumer,
+            AcceleratedItemRenderContext context,
+            Matrix4f transform,
+            Matrix3f normal,
+            int light,
+            int overlay,
+            int color
+    ) {
+        var itemStack = context.getItemStack();
+        var itemColor = context.getItemColor();
+        var extension = vertexConsumer.getAccelerated();
+        var layers = meshes.get(extension);
 
-		extension.beginTransform(transform, normal);
+        extension.beginTransform(transform, normal);
 
-		if (layers != null) {
-			for (int layer : layers.keySet()) {
-				var mesh = layers.get(layer);
+        if (layers != null) {
+            for (int layer : layers.keySet()) {
+                var mesh = layers.get(layer);
 
-				mesh.write(
-						extension,
-						getCustomColor(layer, itemColor.getColor(itemStack, layer)),
-						light,
-						overlay
-				);
-			}
+                mesh.write(
+                        extension,
+                        getCustomColor(layer, itemColor.getColor(itemStack, layer)),
+                        light,
+                        overlay
+                );
+            }
 
-			extension.endTransform();
-			return;
-		}
+            extension.endTransform();
+            return;
+        }
 
-		layers = new Int2ObjectLinkedOpenHashMap<>();
-		meshes.put(extension, layers);
+        layers = new Int2ObjectLinkedOpenHashMap<>();
+        meshes.put(extension, layers);
 
-		var culledMeshCollectors = new Int2ObjectOpenHashMap<CulledMeshCollector>();
+        var culledMeshCollectors = new Int2ObjectOpenHashMap<CulledMeshCollector>();
 
-		for (var direction : DirectionUtils.FULL) {
-			for (var quad : getQuads(null, direction, null)) {
-				var culledMeshCollector = culledMeshCollectors.get(quad.getTintIndex());
+        for (var direction : DirectionUtils.FULL) {
+            for (var quad : getQuads(null, direction, null)) {
+                var culledMeshCollector = culledMeshCollectors.get(quad.getTintIndex());
 
-				if (culledMeshCollector == null) {
-					culledMeshCollector = new CulledMeshCollector	(extension	.getRenderType	(),	extension.getBufferSet().getLayout());
-					culledMeshCollectors.put						(quad		.getTintIndex	(),	culledMeshCollector);
-				}
+                if (culledMeshCollector == null) {
+                    culledMeshCollector = new CulledMeshCollector(extension.getRenderType(), extension.getBufferSet()
+                            .getLayout());
+                    culledMeshCollectors.put(quad.getTintIndex(), culledMeshCollector);
+                }
 
-				var meshBuilder = extension	.decorate	(culledMeshCollector);
-				var data		= quad		.getVertices();
+                var meshBuilder = extension.decorate(culledMeshCollector);
+                var data = quad.getVertices();
 
-				for (int i = 0; i < data.length / 8; i++) {
-					var vertexOffset	= i * IQuadTransformer.STRIDE;
-					var posOffset		= vertexOffset + IQuadTransformer.POSITION;
-					var colorOffset		= vertexOffset + IQuadTransformer.COLOR;
-					var uv0Offset		= vertexOffset + IQuadTransformer.UV0;
-					var uv2Offset		= vertexOffset + IQuadTransformer.UV2;
-					var normalOffset	= vertexOffset + IQuadTransformer.NORMAL;
-					var packedNormal	= data[normalOffset];
+                for (int i = 0; i < data.length / 8; i++) {
+                    var vertexOffset = i * IQuadTransformer.STRIDE;
+                    var posOffset = vertexOffset + IQuadTransformer.POSITION;
+                    var colorOffset = vertexOffset + IQuadTransformer.COLOR;
+                    var uv0Offset = vertexOffset + IQuadTransformer.UV0;
+                    var uv2Offset = vertexOffset + IQuadTransformer.UV2;
+                    var normalOffset = vertexOffset + IQuadTransformer.NORMAL;
+                    var packedNormal = data[normalOffset];
 
-					meshBuilder.addVertex(
-							Float.intBitsToFloat(data[posOffset + 0]),
-							Float.intBitsToFloat(data[posOffset + 1]),
-							Float.intBitsToFloat(data[posOffset + 2]),
-							data[colorOffset],
-							Float.intBitsToFloat(data[uv0Offset + 0]),
-							Float.intBitsToFloat(data[uv0Offset + 1]),
-							-1,
-							data[uv2Offset],
-							((byte) (	packedNormal		& 0xFF)) / 127.0f,
-							((byte) ((	packedNormal >> 8)	& 0xFF)) / 127.0f,
-							((byte) ((	packedNormal >> 16)	& 0xFF)) / 127.0f
-					);
-				}
-			}
-		}
+                    meshBuilder.addVertex(
+                            Float.intBitsToFloat(data[posOffset + 0]),
+                            Float.intBitsToFloat(data[posOffset + 1]),
+                            Float.intBitsToFloat(data[posOffset + 2]),
+                            data[colorOffset],
+                            Float.intBitsToFloat(data[uv0Offset + 0]),
+                            Float.intBitsToFloat(data[uv0Offset + 1]),
+                            -1,
+                            data[uv2Offset],
+                            ((byte) (packedNormal & 0xFF)) / 127.0f,
+                            ((byte) ((packedNormal >> 8) & 0xFF)) / 127.0f,
+                            ((byte) ((packedNormal >> 16) & 0xFF)) / 127.0f
+                    );
+                }
+            }
+        }
 
-		for (int layer : culledMeshCollectors.keySet()) {
-			var culledMeshCollector = culledMeshCollectors.get(layer);
-			culledMeshCollector.flush();
+        for (int layer : culledMeshCollectors.keySet()) {
+            var culledMeshCollector = culledMeshCollectors.get(layer);
+            culledMeshCollector.flush();
 
-			var mesh = AcceleratedItemRenderingFeature
-					.getMeshType()
-					.getBuilder	()
-					.build		(culledMeshCollector);
+            var mesh = AcceleratedItemRenderingFeature
+                    .getMeshType()
+                    .getBuilder()
+                    .build(culledMeshCollector);
 
-			layers	.put	(layer, mesh);
-			mesh	.write	(
-					extension,
-					getCustomColor(layer, itemColor.getColor(itemStack, layer)),
-					light,
-					overlay
-			);
-		}
+            layers.put(layer, mesh);
+            mesh.write(
+                    extension,
+                    getCustomColor(layer, itemColor.getColor(itemStack, layer)),
+                    light,
+                    overlay
+            );
+        }
 
-		extension.endTransform();
-	}
+        extension.endTransform();
+    }
 
 
-	@Unique
-	@Override
-	public boolean isAccelerated() {
-		return true;
-	}
+    @Unique
+    @Override
+    public boolean isAccelerated() {
+        return true;
+    }
 
-	@Unique
-	@Override
-	public boolean isAcceleratedInHand() {
-		return false;
-	}
+    @Unique
+    @Override
+    public boolean isAcceleratedInHand() {
+        return false;
+    }
 
-	@Unique
-	@Override
-	public int getCustomColor(int layer, int color) {
-		return layer == -1 ? -1 : color;
-	}
+    @Unique
+    @Override
+    public int getCustomColor(int layer, int color) {
+        return layer == -1 ? -1 : color;
+    }
 }

@@ -18,101 +18,102 @@ import java.util.Map;
 
 public class ComputeShaderProgramLoader extends SimplePreparableReloadListener<Map<ResourceLocation, ComputeShaderProgramLoader.ShaderSource>> {
 
-	public	static final	ComputeShaderProgramLoader				INSTANCE		= new ComputeShaderProgramLoader();
-	private	static final	Map<ResourceLocation, ComputeProgram>	COMPUTE_SHADERS	= new Object2ObjectOpenHashMap<>();
-	private	static			boolean									LOADED			= false;
+    public static final ComputeShaderProgramLoader INSTANCE = new ComputeShaderProgramLoader();
+    private static final Map<ResourceLocation, ComputeProgram> COMPUTE_SHADERS = new Object2ObjectOpenHashMap<>();
+    private static boolean LOADED = false;
 
-	@Override
-	protected Map<ResourceLocation, ComputeShaderProgramLoader.ShaderSource> prepare(ResourceManager resourceManager, ProfilerFiller profiler) {
-		try {
-			var builder			= ModLoader.postEventWithReturn(new LoadComputeShaderEvent(ImmutableMap.builder()))	.getShaderLocations	();
-			var shaderSources	= new Object2ObjectOpenHashMap<ResourceLocation, ShaderSource>											();
-			var shaderLocations	= builder																			.build				();
+    public static ComputeProgram getProgram(ResourceLocation resourceLocation) {
+        var program = COMPUTE_SHADERS.get(resourceLocation);
 
-			for (ResourceLocation key : shaderLocations.keySet()) {
-				var definition			= shaderLocations	.get(key);
-				var resourceLocation	= definition		.location;
-				var barrierFlags		= definition		.barrierFlags;
+        if (program == null) {
+            throw new IllegalStateException("Get shader program \"" + resourceLocation + "\" too early! Program is not loaded yet!");
+        }
 
-				if (resourceLocation == null) {
-					throw new IllegalStateException("Found empty shader location on: \"" + key + "\"");
-				}
+        return program;
+    }
 
-				var resource = resourceManager.getResource(resourceLocation);
+    public static boolean isProgramsLoaded() {
+        return LOADED;
+    }
 
-				if (resource.isEmpty()) {
-					throw new IllegalStateException("Cannot found compute shader: \"" + resourceLocation + "\"");
-				}
+    @Override
+    protected Map<ResourceLocation, ComputeShaderProgramLoader.ShaderSource> prepare(ResourceManager resourceManager, ProfilerFiller profiler) {
+        try {
+            var builder = ModLoader.postEventWithReturn(new LoadComputeShaderEvent(ImmutableMap.builder()))
+                    .getShaderLocations();
+            var shaderSources = new Object2ObjectOpenHashMap<ResourceLocation, ShaderSource>();
+            var shaderLocations = builder.build();
 
-				try (var stream = resource.get().open()) {
-					shaderSources.put(key, new ShaderSource(new String(stream.readAllBytes(), StandardCharsets.UTF_8), barrierFlags));
-				}
-			}
+            for (ResourceLocation key : shaderLocations.keySet()) {
+                var definition = shaderLocations.get(key);
+                var resourceLocation = definition.location;
+                var barrierFlags = definition.barrierFlags;
 
-			return shaderSources;
-		} catch (Exception e) {
-			throw new ReportedException(CrashReport.forThrowable(e, "Exception while loading compute shader"));
-		}
-	}
+                if (resourceLocation == null) {
+                    throw new IllegalStateException("Found empty shader location on: \"" + key + "\"");
+                }
 
-	@Override
-	protected void apply(
-			Map<ResourceLocation, ShaderSource>	shaderSources,
-			ResourceManager						resourceManager,
-			ProfilerFiller						profiler
-	) {
-		RenderSystem.recordRenderCall(() -> {
-			try {
-				for (var key : shaderSources.keySet()) {
-					var source			= shaderSources	.get(key);
-					var shaderSource	= source		.source;
-					var barrierFlags	= source		.barrierFlags;
+                var resource = resourceManager.getResource(resourceLocation);
 
-					var program			= new ComputeProgram(barrierFlags);
-					var computeShader	= new ComputeShader	();
+                if (resource.isEmpty()) {
+                    throw new IllegalStateException("Cannot found compute shader: \"" + resourceLocation + "\"");
+                }
 
-					computeShader.setShaderSource(shaderSource);
+                try (var stream = resource.get().open()) {
+                    shaderSources.put(key, new ShaderSource(new String(stream.readAllBytes(), StandardCharsets.UTF_8), barrierFlags));
+                }
+            }
 
-					if (!computeShader.compileShader()) {
-						throw new IllegalStateException("Shader \"" + key + "\" failed to compile because of the following errors: " + computeShader.getInfoLog());
-					}
+            return shaderSources;
+        } catch (Exception e) {
+            throw new ReportedException(CrashReport.forThrowable(e, "Exception while loading compute shader"));
+        }
+    }
 
-					program.attachShader(computeShader);
+    @Override
+    protected void apply(
+            Map<ResourceLocation, ShaderSource> shaderSources,
+            ResourceManager resourceManager,
+            ProfilerFiller profiler
+    ) {
+        RenderSystem.recordRenderCall(() -> {
+            try {
+                for (var key : shaderSources.keySet()) {
+                    var source = shaderSources.get(key);
+                    var shaderSource = source.source;
+                    var barrierFlags = source.barrierFlags;
 
-					if (!program.linkProgram()) {
-						throw new IllegalStateException("Program \"" + key + "\" failed to link because of the following errors: " + program.getInfoLog());
-					}
+                    var program = new ComputeProgram(barrierFlags);
+                    var computeShader = new ComputeShader();
 
-					computeShader	.delete	();
-					COMPUTE_SHADERS	.put	(key, program);
-				}
-			} catch (Exception e) {
-				throw new ReportedException(CrashReport.forThrowable(e, "Exception while compiling/linking compute shader"));
-			} finally {
-				LOADED = true;
-			}
-		});
-	}
+                    computeShader.setShaderSource(shaderSource);
 
-	public static ComputeProgram getProgram(ResourceLocation resourceLocation) {
-		var program = COMPUTE_SHADERS.get(resourceLocation);
+                    if (!computeShader.compileShader()) {
+                        throw new IllegalStateException("Shader \"" + key + "\" failed to compile because of the following errors: " + computeShader.getInfoLog());
+                    }
 
-		if (program == null) {
-			throw new IllegalStateException("Get shader program \""+ resourceLocation + "\" too early! Program is not loaded yet!");
-		}
+                    program.attachShader(computeShader);
 
-		return program;
-	}
+                    if (!program.linkProgram()) {
+                        throw new IllegalStateException("Program \"" + key + "\" failed to link because of the following errors: " + program.getInfoLog());
+                    }
 
-	public static boolean isProgramsLoaded() {
-		return LOADED;
-	}
+                    computeShader.delete();
+                    COMPUTE_SHADERS.put(key, program);
+                }
+            } catch (Exception e) {
+                throw new ReportedException(CrashReport.forThrowable(e, "Exception while compiling/linking compute shader"));
+            } finally {
+                LOADED = true;
+            }
+        });
+    }
 
-	public record ShaderDefinition(ResourceLocation location, int barrierFlags) {
+    public record ShaderDefinition(ResourceLocation location, int barrierFlags) {
 
-	}
+    }
 
-	public record ShaderSource(String source, int barrierFlags) {
+    public record ShaderSource(String source, int barrierFlags) {
 
-	}
+    }
 }

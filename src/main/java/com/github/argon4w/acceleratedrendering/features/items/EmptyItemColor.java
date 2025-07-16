@@ -5,10 +5,10 @@ import net.minecraft.world.item.ItemStack;
 
 public class EmptyItemColor implements ItemColor {
 
-	public static final ItemColor INSTANCE = new EmptyItemColor();
+    public static final ItemColor INSTANCE = new EmptyItemColor();
 
-	@Override
-	public int getColor(ItemStack pStack, int pTintIndex) {
-		return -1;
-	}
+    @Override
+    public int getColor(ItemStack pStack, int pTintIndex) {
+        return -1;
+    }
 }

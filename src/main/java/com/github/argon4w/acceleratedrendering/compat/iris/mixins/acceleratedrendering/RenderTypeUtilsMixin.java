@@ -10,23 +10,23 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 @Mixin(RenderTypeUtils.class)
 public class RenderTypeUtilsMixin {
 
-	@ModifyVariable(
-			method		= "getTextureLocation",
-			at			= @At("HEAD"),
-			ordinal		= 0,
-			argsOnly	= true
-	)
-	private static RenderType unwrapIrisRenderType1(RenderType renderType) {
-		return renderType instanceof WrappableRenderType wrapped ? wrapped.unwrap() : renderType;
-	}
+    @ModifyVariable(
+            method = "getTextureLocation",
+            at = @At("HEAD"),
+            ordinal = 0,
+            argsOnly = true
+    )
+    private static RenderType unwrapIrisRenderType1(RenderType renderType) {
+        return renderType instanceof WrappableRenderType wrapped ? wrapped.unwrap() : renderType;
+    }
 
-	@ModifyVariable(
-			method		= "isCulled",
-			at			= @At("HEAD"),
-			ordinal		= 0,
-			argsOnly	= true
-	)
-	private static RenderType unwrapIrisRenderType2(RenderType renderType) {
-		return renderType instanceof WrappableRenderType wrapped ? wrapped.unwrap() : renderType;
-	}
+    @ModifyVariable(
+            method = "isCulled",
+            at = @At("HEAD"),
+            ordinal = 0,
+            argsOnly = true
+    )
+    private static RenderType unwrapIrisRenderType2(RenderType renderType) {
+        return renderType instanceof WrappableRenderType wrapped ? wrapped.unwrap() : renderType;
+    }
 }

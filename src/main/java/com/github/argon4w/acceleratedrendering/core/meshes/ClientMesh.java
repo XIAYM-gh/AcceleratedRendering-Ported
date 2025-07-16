@@ -12,60 +12,60 @@ import java.util.Set;
 @AllArgsConstructor
 public class ClientMesh implements IMesh {
 
-	private final int			size;
-	private final ByteBuffer	vertexBuffer;
+    private final int size;
+    private final ByteBuffer vertexBuffer;
 
-	@Override
-	public void write(
-			IAcceleratedVertexConsumer	extension,
-			int							color,
-			int							light,
-			int							overlay
-	) {
-		extension.addClientMesh(
-				vertexBuffer,
-				size,
-				color,
-				light,
-				overlay
-		);
-	}
+    @Override
+    public void write(
+            IAcceleratedVertexConsumer extension,
+            int color,
+            int light,
+            int overlay
+    ) {
+        extension.addClientMesh(
+                vertexBuffer,
+                size,
+                color,
+                light,
+                overlay
+        );
+    }
 
-	public static class Builder implements IMesh.Builder {
+    public static class Builder implements IMesh.Builder {
 
-		public static	final Builder					INSTANCE = new Builder();
+        public static final Builder INSTANCE = new Builder();
 
-		private			final Set<ByteBufferBuilder>	builders;
+        private final Set<ByteBufferBuilder> builders;
 
-		private Builder() {
-			this.builders = new ReferenceLinkedOpenHashSet<>();
-		}
+        private Builder() {
+            this.builders = new ReferenceLinkedOpenHashSet<>();
+        }
 
-		@Override
-		public IMesh build(IMeshCollector collector) {
-			var vertexCount = collector.getVertexCount();
+        @Override
+        public IMesh build(IMeshCollector collector) {
+            var vertexCount = collector.getVertexCount();
 
-			if (vertexCount == 0) {
-				return EmptyMesh.INSTANCE;
-			}
+            if (vertexCount == 0) {
+                return EmptyMesh.INSTANCE;
+            }
 
-			var builder	= collector	.getBuffer	();
-			var result	= builder	.build		();
+            var builder = collector.getBuffer();
+            var result = builder.build();
 
-			if (result == null) {
-				builder.close();
-				return EmptyMesh.INSTANCE;
-			}
+            if (result == null) {
+                builder.close();
+                return EmptyMesh.INSTANCE;
+            }
 
-			builders.add(builder);
-			return new ClientMesh(vertexCount, result.byteBuffer());
-		}
+            builders.add(builder);
+            return new ClientMesh(vertexCount, result.byteBuffer());
+        }
 
-		@Override
-		public void close() {
-			for (var builder : builders) {
-				builder.close();
-			}
-		}
-	}
+        @Override
+        public void close() {
+            for (var builder : builders) {
+                builder.close();
+            }
+        }
+    }
 }

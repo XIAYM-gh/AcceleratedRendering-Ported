@@ -5,6 +5,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 
 public interface IAcceleratedBufferSource extends MultiBufferSource {
 
-	IBufferEnvironment	getBufferEnvironment();
-	void				drawBuffers			();
+    IBufferEnvironment getBufferEnvironment();
+
+    void drawBuffers();
 }

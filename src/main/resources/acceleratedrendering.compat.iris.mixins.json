@@ -6,10 +6,10 @@
   "plugin": "com.github.argon4w.acceleratedrendering.compat.iris.mixins.plugin.IrisCompatMixinPlugin",
   "client": [
     "acceleratedrendering.AcceleratedBufferSourceMixin",
+    "acceleratedrendering.AcceleratedBufferSourceSetMixin",
     "acceleratedrendering.AcceleratedRenderingModEntryMixin",
     "acceleratedrendering.CoreBuffersMixin",
     "acceleratedrendering.IBufferEnvironmentPresetsMixin",
-    "acceleratedrendering.AcceleratedBufferSourceSetMixin",
     "acceleratedrendering.RenderTypeUtilsMixin",
     "iris.FullyBufferedMultiBufferSourceMixin",
     "iris.HandRendererMixin",

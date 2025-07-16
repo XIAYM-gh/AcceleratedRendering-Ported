@@ -4,5 +4,5 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 
 public interface IBufferDecorator {
 
-	VertexConsumer decorate(VertexConsumer buffer);
+    VertexConsumer decorate(VertexConsumer buffer);
 }

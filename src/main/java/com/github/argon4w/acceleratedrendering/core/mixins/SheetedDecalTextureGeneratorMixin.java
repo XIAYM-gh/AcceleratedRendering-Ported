@@ -14,49 +14,57 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
-@ExtensionMethod(VertexConsumerExtension		.class)
-@Mixin			(SheetedDecalTextureGenerator	.class)
+@ExtensionMethod(VertexConsumerExtension.class)
+@Mixin(SheetedDecalTextureGenerator.class)
 public class SheetedDecalTextureGeneratorMixin implements IAcceleratedVertexConsumer {
 
-	@Shadow @Final private VertexConsumer	delegate;
-	@Shadow @Final private Matrix4f			cameraInversePose;
-	@Shadow @Final private Matrix3f			normalInversePose;
-	@Shadow @Final private float			textureScale;
+    @Shadow
+    @Final
+    private VertexConsumer delegate;
+    @Shadow
+    @Final
+    private Matrix4f cameraInversePose;
+    @Shadow
+    @Final
+    private Matrix3f normalInversePose;
+    @Shadow
+    @Final
+    private float textureScale;
 
-	@Unique
-	@Override
-	public boolean isAccelerated() {
-		return delegate
-				.getAccelerated()
-				.isAccelerated();
-	}
+    @Unique
+    @Override
+    public boolean isAccelerated() {
+        return delegate
+                .getAccelerated()
+                .isAccelerated();
+    }
 
-	@Unique
-	@Override
-	public <T>  void doRender(
-			IAcceleratedRenderer<T>	renderer,
-			T						context,
-			Matrix4f				transform,
-			Matrix3f				normal,
-			int						light,
-			int						overlay,
-			int						color
-	) {
-		delegate
-				.getAccelerated	()
-				.doRender		(
-						new SheetedDecalTextureRenderer<>(
-								renderer,
-								cameraInversePose,
-								normalInversePose,
-								textureScale
-						),
-						context,
-						transform,
-						normal,
-						light,
-						overlay,
-						color
-				);
-	}
+    @Unique
+    @Override
+    public <T> void doRender(
+            IAcceleratedRenderer<T> renderer,
+            T context,
+            Matrix4f transform,
+            Matrix3f normal,
+            int light,
+            int overlay,
+            int color
+    ) {
+        delegate
+                .getAccelerated()
+                .doRender(
+                        new SheetedDecalTextureRenderer<>(
+                                renderer,
+                                cameraInversePose,
+                                normalInversePose,
+                                textureScale
+                        ),
+                        context,
+                        transform,
+                        normal,
+                        light,
+                        overlay,
+                        color
+                );
+    }
 }

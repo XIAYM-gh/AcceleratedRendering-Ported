@@ -10,15 +10,15 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 @Mixin(AcceleratedBufferSource.class)
 public class AcceleratedBufferSourceMixin {
 
-	@ModifyArg(
-			method	= "getBuffer",
-			at		= @At(
-					value	= "INVOKE",
-					target	= "Lcom/github/argon4w/acceleratedrendering/core/buffers/accelerated/builders/AcceleratedBufferBuilder;<init>(Lcom/github/argon4w/acceleratedrendering/core/buffers/accelerated/pools/StagingBufferPool$StagingBuffer;Lcom/github/argon4w/acceleratedrendering/core/buffers/accelerated/pools/StagingBufferPool$StagingBuffer;Lcom/github/argon4w/acceleratedrendering/core/buffers/accelerated/pools/ElementBufferPool$ElementSegment;Lcom/github/argon4w/acceleratedrendering/core/buffers/accelerated/AcceleratedBufferSetPool$BufferSet;Lnet/minecraft/client/renderer/RenderType;)V"
-			),
-			index	= 4
-	)
-	public RenderType unwrapIrisRenderType(RenderType renderType) {
-		return renderType instanceof WrappableRenderType wrapped ? wrapped.unwrap() : renderType;
-	}
+    @ModifyArg(
+            method = "getBuffer",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lcom/github/argon4w/acceleratedrendering/core/buffers/accelerated/builders/AcceleratedBufferBuilder;<init>(Lcom/github/argon4w/acceleratedrendering/core/buffers/accelerated/pools/StagingBufferPool$StagingBuffer;Lcom/github/argon4w/acceleratedrendering/core/buffers/accelerated/pools/StagingBufferPool$StagingBuffer;Lcom/github/argon4w/acceleratedrendering/core/buffers/accelerated/pools/ElementBufferPool$ElementSegment;Lcom/github/argon4w/acceleratedrendering/core/buffers/accelerated/AcceleratedBufferSetPool$BufferSet;Lnet/minecraft/client/renderer/RenderType;)V"
+            ),
+            index = 4
+    )
+    public RenderType unwrapIrisRenderType(RenderType renderType) {
+        return renderType instanceof WrappableRenderType wrapped ? wrapped.unwrap() : renderType;
+    }
 }

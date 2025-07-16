@@ -19,97 +19,97 @@ import java.util.Map;
 @ExtensionMethod(VertexConsumerExtension.class)
 public class AcceleratedBakedGlyphRenderer implements IAcceleratedRenderer<Vector2f> {
 
-	private static final Matrix4f TRANSFORM	= new Matrix4f();
-	private static final Matrix3f NORMAL	= new Matrix3f();
+    private static final Matrix4f TRANSFORM = new Matrix4f();
+    private static final Matrix3f NORMAL = new Matrix3f();
 
-	private final Map<IBufferGraph, IMesh>	meshes;
-	private final BakedGlyph				bakedGlyph;
-	private final boolean					italic;
+    private final Map<IBufferGraph, IMesh> meshes;
+    private final BakedGlyph bakedGlyph;
+    private final boolean italic;
 
-	public AcceleratedBakedGlyphRenderer(BakedGlyph bakedGlyph, boolean italic) {
-		this.meshes		= new Object2ObjectOpenHashMap<>();
-		this.bakedGlyph	= bakedGlyph;
-		this.italic		= italic;
-	}
+    public AcceleratedBakedGlyphRenderer(BakedGlyph bakedGlyph, boolean italic) {
+        this.meshes = new Object2ObjectOpenHashMap<>();
+        this.bakedGlyph = bakedGlyph;
+        this.italic = italic;
+    }
 
-	@Override
-	public void render(
-			VertexConsumer	vertexConsumer,
-			Vector2f		context,
-			Matrix4f		transform,
-			Matrix3f		normal,
-			int				light,
-			int				overlay,
-			int				color
-	) {
-		var extension	= vertexConsumer.getAccelerated	();
-		var mesh		= meshes		.get			(extension);
+    @Override
+    public void render(
+            VertexConsumer vertexConsumer,
+            Vector2f context,
+            Matrix4f transform,
+            Matrix3f normal,
+            int light,
+            int overlay,
+            int color
+    ) {
+        var extension = vertexConsumer.getAccelerated();
+        var mesh = meshes.get(extension);
 
-		TRANSFORM.set		(transform);
-		TRANSFORM.translate	(
-				context.x,
-				context.y,
-				0.0f
-		);
+        TRANSFORM.set(transform);
+        TRANSFORM.translate(
+                context.x,
+                context.y,
+                0.0f
+        );
 
-		extension.beginTransform(TRANSFORM, NORMAL);
+        extension.beginTransform(TRANSFORM, NORMAL);
 
-		if (mesh != null) {
-			mesh.write(
-					extension,
-					color,
-					light,
-					overlay
-			);
+        if (mesh != null) {
+            mesh.write(
+                    extension,
+                    color,
+                    light,
+                    overlay
+            );
 
-			extension.endTransform();
-			return;
-		}
+            extension.endTransform();
+            return;
+        }
 
-		var meshCollector	= new SimpleMeshCollector	(extension.getBufferSet().getLayout());
-		var meshBuilder		= extension.decorate		(meshCollector);
+        var meshCollector = new SimpleMeshCollector(extension.getBufferSet().getLayout());
+        var meshBuilder = extension.decorate(meshCollector);
 
-		var italicOffsetUp		= italic ? 1.0f - 0.25f * bakedGlyph.up		: 0.0f;
-		var italicOffsetDown	= italic ? 1.0f - 0.25f * bakedGlyph.down	: 0.0f;
+        var italicOffsetUp = italic ? 1.0f - 0.25f * bakedGlyph.up : 0.0f;
+        var italicOffsetDown = italic ? 1.0f - 0.25f * bakedGlyph.down : 0.0f;
 
-		var positions = new Vector2f[] {
-				new Vector2f(bakedGlyph.left	+ italicOffsetUp,	bakedGlyph.up),
-				new Vector2f(bakedGlyph.left	+ italicOffsetDown,	bakedGlyph.down),
-				new Vector2f(bakedGlyph.right	+ italicOffsetDown,	bakedGlyph.down),
-				new Vector2f(bakedGlyph.right	+ italicOffsetUp,	bakedGlyph.up)
-		};
+        var positions = new Vector2f[]{
+                new Vector2f(bakedGlyph.left + italicOffsetUp, bakedGlyph.up),
+                new Vector2f(bakedGlyph.left + italicOffsetDown, bakedGlyph.down),
+                new Vector2f(bakedGlyph.right + italicOffsetDown, bakedGlyph.down),
+                new Vector2f(bakedGlyph.right + italicOffsetUp, bakedGlyph.up)
+        };
 
-		var texCoords = new Vector2f[] {
-				new Vector2f(bakedGlyph.u0, bakedGlyph.v0),
-				new Vector2f(bakedGlyph.u0, bakedGlyph.v1),
-				new Vector2f(bakedGlyph.u1, bakedGlyph.v1),
-				new Vector2f(bakedGlyph.u1, bakedGlyph.v0),
-		};
+        var texCoords = new Vector2f[]{
+                new Vector2f(bakedGlyph.u0, bakedGlyph.v0),
+                new Vector2f(bakedGlyph.u0, bakedGlyph.v1),
+                new Vector2f(bakedGlyph.u1, bakedGlyph.v1),
+                new Vector2f(bakedGlyph.u1, bakedGlyph.v0),
+        };
 
-		for (var i = 0; i < 4; i ++) {
-			var position	= new Vector3f(positions[i], 0.0f);
-			var texCoord	= texCoords[i];
+        for (var i = 0; i < 4; i++) {
+            var position = new Vector3f(positions[i], 0.0f);
+            var texCoord = texCoords[i];
 
-			meshBuilder
-					.addVertex	(position)
-					.setColor	(-1)
-					.setUv		(texCoord.x, texCoord.y)
-					.setLight	(0);
-		}
+            meshBuilder
+                    .addVertex(position)
+                    .setColor(-1)
+                    .setUv(texCoord.x, texCoord.y)
+                    .setLight(0);
+        }
 
-		mesh = AcceleratedTextRenderingFeature
-				.getMeshType()
-				.getBuilder	()
-				.build		(meshCollector);
+        mesh = AcceleratedTextRenderingFeature
+                .getMeshType()
+                .getBuilder()
+                .build(meshCollector);
 
-		meshes	.put	(extension, mesh);
-		mesh	.write	(
-				extension,
-				color,
-				light,
-				overlay
-		);
+        meshes.put(extension, mesh);
+        mesh.write(
+                extension,
+                color,
+                light,
+                overlay
+        );
 
-		extension.endTransform();
-	}
+        extension.endTransform();
+    }
 }

@@ -5,5 +5,5 @@ import net.minecraft.client.renderer.RenderType;
 
 public interface IAccelerationHolder {
 
-	VertexConsumer initAcceleration(RenderType renderType);
+    VertexConsumer initAcceleration(RenderType renderType);
 }

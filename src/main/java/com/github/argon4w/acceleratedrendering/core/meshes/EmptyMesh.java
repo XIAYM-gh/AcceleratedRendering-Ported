@@ -4,15 +4,15 @@ import com.github.argon4w.acceleratedrendering.core.buffers.accelerated.builders
 
 public class EmptyMesh implements IMesh {
 
-	public static final EmptyMesh INSTANCE = new EmptyMesh();
+    public static final EmptyMesh INSTANCE = new EmptyMesh();
 
-	@Override
-	public void write(
-			IAcceleratedVertexConsumer	extension,
-			int							color,
-			int							light,
-			int							overlay
-	) {
+    @Override
+    public void write(
+            IAcceleratedVertexConsumer extension,
+            int color,
+            int light,
+            int overlay
+    ) {
 
-	}
+    }
 }

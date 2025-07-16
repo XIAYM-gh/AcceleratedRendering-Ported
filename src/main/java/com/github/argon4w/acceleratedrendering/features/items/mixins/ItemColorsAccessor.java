@@ -11,6 +11,6 @@ import java.util.Map;
 @Mixin(ItemColors.class)
 public interface ItemColorsAccessor {
 
-	@Accessor("itemColors")
-	Map<Item, ItemColor> getItemColors();
+    @Accessor("itemColors")
+    Map<Item, ItemColor> getItemColors();
 }

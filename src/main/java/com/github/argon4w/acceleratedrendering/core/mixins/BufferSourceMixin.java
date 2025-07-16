@@ -9,17 +9,17 @@ import net.minecraft.client.renderer.RenderType;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
-@ExtensionMethod(VertexConsumerExtension		.class)
-@Mixin			(MultiBufferSource.BufferSource	.class)
+@ExtensionMethod(VertexConsumerExtension.class)
+@Mixin(MultiBufferSource.BufferSource.class)
 public class BufferSourceMixin {
 
-	@ModifyReturnValue(
-			method	= "getBuffer",
-			at		= @At("RETURN")
-	)
-	public VertexConsumer initAcceleration(VertexConsumer original, RenderType renderType) {
-		return original
-				.getHolder			()
-				.initAcceleration	(renderType);
-	}
+    @ModifyReturnValue(
+            method = "getBuffer",
+            at = @At("RETURN")
+    )
+    public VertexConsumer initAcceleration(VertexConsumer original, RenderType renderType) {
+        return original
+                .getHolder()
+                .initAcceleration(renderType);
+    }
 }

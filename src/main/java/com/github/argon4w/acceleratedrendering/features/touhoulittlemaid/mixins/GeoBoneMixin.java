@@ -23,149 +23,152 @@ import org.spongepowered.asm.mixin.Unique;
 import java.util.Map;
 
 @ExtensionMethod(VertexConsumerExtension.class)
-@Mixin			(GeoBone				.class)
+@Mixin(GeoBone.class)
 public class GeoBoneMixin implements IAcceleratedRenderer<Void> {
 
-	@Shadow @Final private GeoMesh						cubes;
+    @Unique
+    private final Map<IBufferGraph, IMesh> meshes = new Object2ObjectOpenHashMap<>();
+    @Shadow
+    @Final
+    private GeoMesh cubes;
 
-	@Unique private final	Map<IBufferGraph, IMesh>	meshes = new Object2ObjectOpenHashMap<>();
+    @Unique
+    @Override
+    public void render(
+            VertexConsumer vertexConsumer,
+            Void context,
+            Matrix4f transformMatrix,
+            Matrix3f normalMatrix,
+            int light,
+            int overlay,
+            int color
+    ) {
+        var extension = vertexConsumer.getAccelerated();
+        var mesh = meshes.get(extension);
 
-	@Unique
-	@Override
-	public void render(
-			VertexConsumer	vertexConsumer,
-			Void			context,
-			Matrix4f		transformMatrix,
-			Matrix3f		normalMatrix,
-			int				light,
-			int				overlay,
-			int				color
-	) {
-		var extension	= vertexConsumer.getAccelerated	();
-		var mesh		= meshes		.get			(extension);
+        extension.beginTransform(transformMatrix, normalMatrix);
 
-		extension.beginTransform(transformMatrix, normalMatrix);
+        if (mesh != null) {
+            mesh.write(
+                    extension,
+                    color,
+                    light,
+                    overlay
+            );
 
-		if (mesh != null) {
-			mesh.write(
-					extension,
-					color,
-					light,
-					overlay
-			);
+            extension.endTransform();
+            return;
+        }
 
-			extension.endTransform();
-			return;
-		}
+        var culledMeshCollector = new CulledMeshCollector(extension.getRenderType(), extension.getBufferSet()
+                .getLayout());
+        var meshBuilder = extension.decorate(culledMeshCollector);
 
-		var culledMeshCollector	= new CulledMeshCollector	(extension.getRenderType(), extension.getBufferSet().getLayout());
-		var meshBuilder			= extension.decorate		(culledMeshCollector);
+        for (int i = 0; i < cubes.getCubeCount(); ++i) {
+            var deltaX = new Vector3f(cubes.dx(i));
+            var deltaY = new Vector3f(cubes.dy(i));
+            var deltaZ = new Vector3f(cubes.dz(i));
 
-		for(int i = 0; i < cubes.getCubeCount(); ++i) {
-			var deltaX			= new Vector3f	(cubes.dx(i));
-			var deltaY			= new Vector3f	(cubes.dy(i));
-			var deltaZ			= new Vector3f	(cubes.dz(i));
+            var p000 = new Vector3f(cubes.position(i));
+            var p100 = p000.add(deltaX, new Vector3f());
+            var p110 = p100.add(deltaY, new Vector3f());
+            var p010 = p000.add(deltaY, new Vector3f());
+            var p001 = p000.add(deltaZ, new Vector3f());
+            var p101 = p100.add(deltaZ, new Vector3f());
+            var p111 = p110.add(deltaZ, new Vector3f());
+            var p011 = p010.add(deltaZ, new Vector3f());
 
-			var p000			= new Vector3f	(cubes.position(i));
-			var p100			= p000	.add	(deltaX, new Vector3f());
-			var p110			= p100	.add	(deltaY, new Vector3f());
-			var p010			= p000	.add	(deltaY, new Vector3f());
-			var p001			= p000	.add	(deltaZ, new Vector3f());
-			var p101			= p100	.add	(deltaZ, new Vector3f());
-			var p111			= p110	.add	(deltaZ, new Vector3f());
-			var p011			= p010	.add	(deltaZ, new Vector3f());
-			
-			var positiveNormalZ	= deltaX.cross	(deltaY, new Vector3f()).normalize();
-			var positiveNormalX	= deltaY.cross	(deltaZ, new Vector3f()).normalize();
-			var positiveNormalY	= deltaZ.cross	(deltaX, new Vector3f()).normalize();
-			var faces			= cubes	.faces	(i);
-			var mirrored		= (faces & 64) != 0;
+            var positiveNormalZ = deltaX.cross(deltaY, new Vector3f()).normalize();
+            var positiveNormalX = deltaY.cross(deltaZ, new Vector3f()).normalize();
+            var positiveNormalY = deltaZ.cross(deltaX, new Vector3f()).normalize();
+            var faces = cubes.faces(i);
+            var mirrored = (faces & 64) != 0;
 
-			if (mirrored) {
-				positiveNormalX.mul(-1.0F);
-				positiveNormalY.mul(-1.0F);
-				positiveNormalZ.mul(-1.0F);
-			}
+            if (mirrored) {
+                positiveNormalX.mul(-1.0F);
+                positiveNormalY.mul(-1.0F);
+                positiveNormalZ.mul(-1.0F);
+            }
 
-			var negativeNormalX	= positiveNormalX.negate(new Vector3f());
-			var negativeNormalY	= positiveNormalY.negate(new Vector3f());
-			var negativeNormalZ	= positiveNormalZ.negate(new Vector3f());
+            var negativeNormalX = positiveNormalX.negate(new Vector3f());
+            var negativeNormalY = positiveNormalY.negate(new Vector3f());
+            var negativeNormalZ = positiveNormalZ.negate(new Vector3f());
 
-			var positions		= new Vector3f[][] {
-					{p101, p001, p000, p100},
-					{p110, p010, p011, p111},
-					{p100, p000, p010, p110},
-					{p001, p101, p111, p011},
-					{p101, p100, p110, p111},
-					{p000, p001, p011, p010}
-			};
+            var positions = new Vector3f[][]{
+                    { p101, p001, p000, p100 },
+                    { p110, p010, p011, p111 },
+                    { p100, p000, p010, p110 },
+                    { p001, p101, p111, p011 },
+                    { p101, p100, p110, p111 },
+                    { p000, p001, p011, p010 }
+            };
 
-			var texCoords		= new float[][] {
-					{cubes.downU0(i),	cubes.downU1(i),	cubes.downV0(i),	cubes.downV1(i)	},
-					{cubes.upU0(i),		cubes.upU1(i),		cubes.upV0(i),		cubes.upV1(i)	},
-					{cubes.northU0(i),	cubes.northU1(i),	cubes.northV0(i),	cubes.northV1(i)},
-					{cubes.southU0(i),	cubes.southU1(i),	cubes.southV0(i),	cubes.southV1(i)},
-					{cubes.eastU0(i),	cubes.eastU1(i),	cubes.eastV0(i),	cubes.eastV1(i)	},
-					{cubes.westU0(i),	cubes.westU1(i),	cubes.westV0(i),	cubes.westV1(i)	},
-			};
+            var texCoords = new float[][]{
+                    { cubes.downU0(i), cubes.downU1(i), cubes.downV0(i), cubes.downV1(i) },
+                    { cubes.upU0(i), cubes.upU1(i), cubes.upV0(i), cubes.upV1(i) },
+                    { cubes.northU0(i), cubes.northU1(i), cubes.northV0(i), cubes.northV1(i) },
+                    { cubes.southU0(i), cubes.southU1(i), cubes.southV0(i), cubes.southV1(i) },
+                    { cubes.eastU0(i), cubes.eastU1(i), cubes.eastV0(i), cubes.eastV1(i) },
+                    { cubes.westU0(i), cubes.westU1(i), cubes.westV0(i), cubes.westV1(i) },
+            };
 
-			var texOrders		= new Vector2i[] {
-					new Vector2i(0, 3),
-					new Vector2i(1, 3),
-					new Vector2i(1, 2),
-					new Vector2i(0, 2)
-			};
+            var texOrders = new Vector2i[]{
+                    new Vector2i(0, 3),
+                    new Vector2i(1, 3),
+                    new Vector2i(1, 2),
+                    new Vector2i(0, 2)
+            };
 
-			var normals			= new Vector3f[] {
-					negativeNormalY,
-					positiveNormalY,
-					negativeNormalZ,
-					positiveNormalZ,
-					positiveNormalX,
-					negativeNormalX
-			};
+            var normals = new Vector3f[]{
+                    negativeNormalY,
+                    positiveNormalY,
+                    negativeNormalZ,
+                    positiveNormalZ,
+                    positiveNormalX,
+                    negativeNormalX
+            };
 
-			for (var j = 0; j < 6; j ++) {
-				if ((faces & (1 << j)) != 0) {
-					for (var k = 0; k < 4; k ++) {
-						var position	= positions	[j][k];
-						var texCoord	= texCoords	[j];
-						var texOrder	= texOrders	[k];
-						var normal		= normals	[j];
+            for (var j = 0; j < 6; j++) {
+                if ((faces & (1 << j)) != 0) {
+                    for (var k = 0; k < 4; k++) {
+                        var position = positions[j][k];
+                        var texCoord = texCoords[j];
+                        var texOrder = texOrders[k];
+                        var normal = normals[j];
 
-						meshBuilder.addVertex(
-								position.x,
-								position.y,
-								position.z,
-								color,
-								texCoord[texOrder.x],
-								texCoord[texOrder.y],
-								overlay,
-								light,
-								normal.x,
-								normal.y,
-								normal.z
-						);
-					}
-				}
-			}
-		}
+                        meshBuilder.addVertex(
+                                position.x,
+                                position.y,
+                                position.z,
+                                color,
+                                texCoord[texOrder.x],
+                                texCoord[texOrder.y],
+                                overlay,
+                                light,
+                                normal.x,
+                                normal.y,
+                                normal.z
+                        );
+                    }
+                }
+            }
+        }
 
-		culledMeshCollector.flush();
+        culledMeshCollector.flush();
 
-		mesh = AcceleratedEntityRenderingFeature
-				.getMeshType()
-				.getBuilder	()
-				.build		(culledMeshCollector);
+        mesh = AcceleratedEntityRenderingFeature
+                .getMeshType()
+                .getBuilder()
+                .build(culledMeshCollector);
 
-		meshes	.put	(extension, mesh);
-		mesh	.write	(
-				extension,
-				color,
-				light,
-				overlay
-		);
+        meshes.put(extension, mesh);
+        mesh.write(
+                extension,
+                color,
+                light,
+                overlay
+        );
 
-		extension.endTransform();
-	}
+        extension.endTransform();
+    }
 }

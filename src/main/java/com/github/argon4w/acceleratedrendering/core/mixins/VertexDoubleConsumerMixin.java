@@ -13,51 +13,55 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
 @ExtensionMethod(VertexConsumerExtension.class)
-@Mixin			(targets = "com.mojang.blaze3d.vertex.VertexMultiConsumer$Double")
+@Mixin(targets = "com.mojang.blaze3d.vertex.VertexMultiConsumer$Double")
 public class VertexDoubleConsumerMixin implements IAcceleratedVertexConsumer {
 
-	@Shadow @Final private VertexConsumer first;
-	@Shadow @Final private VertexConsumer second;
+    @Shadow
+    @Final
+    private VertexConsumer first;
+    @Shadow
+    @Final
+    private VertexConsumer second;
 
-	@Unique
-	@Override
-	public boolean isAccelerated() {
-		return 		first	.getAccelerated().isAccelerated()
-				&&	second	.getAccelerated().isAccelerated();
-	}
+    @Unique
+    @Override
+    public boolean isAccelerated() {
+        return first.getAccelerated().isAccelerated()
+                && second.getAccelerated().isAccelerated();
+    }
 
-	@Unique
-	@Override
-	public <T>  void doRender(
-			IAcceleratedRenderer<T>	renderer,
-			T						context,
-			Matrix4f				transform,
-			Matrix3f				normal,
-			int						light,
-			int						overlay,
-			int						color
-	) {
-		first
-				.getAccelerated	()
-				.doRender		(
-						renderer,
-						context,
-						transform,
-						normal,
-						light,
-						overlay,
-						color
-				);
-		second
-				.getAccelerated	()
-				.doRender		(
-						renderer,
-						context,
-						transform,
-						normal,
-						light,
-						overlay,
-						color
-				);
-	}
+    @Unique
+    @Override
+    public <T> void doRender(
+            IAcceleratedRenderer<T> renderer,
+            T context,
+            Matrix4f transform,
+            Matrix3f normal,
+            int light,
+            int overlay,
+            int color
+    ) {
+        first
+                .getAccelerated()
+                .doRender(
+                        renderer,
+                        context,
+                        transform,
+                        normal,
+                        light,
+                        overlay,
+                        color
+                );
+        second
+                .getAccelerated()
+                .doRender(
+                        renderer,
+                        context,
+                        transform,
+                        normal,
+                        light,
+                        overlay,
+                        color
+                );
+    }
 }

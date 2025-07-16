@@ -11,14 +11,14 @@ import org.spongepowered.asm.mixin.injection.At;
 @Mixin(AcceleratedBufferSources.class)
 public class AcceleratedBufferSourceSetMixin {
 
-	@WrapOperation(
-			method	= "get",
-			at		= @At(
-					value	= "FIELD",
-					target	= "Lnet/minecraft/client/renderer/RenderType;name:Ljava/lang/String;"
-			)
-	)
-	public String unwrapIrisRenderType(RenderType instance, Operation<String> original) {
-		return original.call(instance instanceof WrappableRenderType wrapped ? wrapped.unwrap() : instance);
-	}
+    @WrapOperation(
+            method = "get",
+            at = @At(
+                    value = "FIELD",
+                    target = "Lnet/minecraft/client/renderer/RenderType;name:Ljava/lang/String;"
+            )
+    )
+    public String unwrapIrisRenderType(RenderType instance, Operation<String> original) {
+        return original.call(instance instanceof WrappableRenderType wrapped ? wrapped.unwrap() : instance);
+    }
 }

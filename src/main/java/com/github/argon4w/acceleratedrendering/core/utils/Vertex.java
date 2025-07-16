@@ -10,30 +10,30 @@ import org.joml.Vector4i;
 @Getter
 public class Vertex {
 
-	private final Vector3f position;
-	private final Vector2f uv;
-	private final Vector4i color;
-	private final Vector2i light;
-	private final Vector3f normal;
+    private final Vector3f position;
+    private final Vector2f uv;
+    private final Vector4i color;
+    private final Vector2i light;
+    private final Vector3f normal;
 
-	public Vertex() {
-		this.position	= new Vector3f();
-		this.uv			= new Vector2f();
-		this.color		= new Vector4i();
-		this.light		= new Vector2i();
-		this.normal		= new Vector3f();
-	}
+    public Vertex() {
+        this.position = new Vector3f();
+        this.uv = new Vector2f();
+        this.color = new Vector4i();
+        this.light = new Vector2i();
+        this.normal = new Vector3f();
+    }
 
-	public int getPackedLight() {
-		return light.x | light.y << 16;
-	}
+    public int getPackedLight() {
+        return light.x | light.y << 16;
+    }
 
-	public int getPackedColor() {
-		return FastColor.ARGB32.color(
-				color.w,
-				color.x,
-				color.y,
-				color.z
-		);
-	}
+    public int getPackedColor() {
+        return FastColor.ARGB32.color(
+                color.w,
+                color.x,
+                color.y,
+                color.z
+        );
+    }
 }

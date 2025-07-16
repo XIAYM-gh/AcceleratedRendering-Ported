@@ -22,61 +22,63 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @ExtensionMethod(VertexConsumerExtension.class)
-@Mixin			(
-		value		= EntityRenderDispatcher.class,
-		priority	= 999
+@Mixin(
+        value = EntityRenderDispatcher.class,
+        priority = 999
 )
 public class EntityRenderDispatcherMixin {
 
-	@Unique private static final Matrix3f							SHADOW_NORMAL_MATRIX	= new Matrix3f().identity				();
-	@Unique private static final AcceleratedEntityShadowRenderer	SHADOW_RENDERER			= new AcceleratedEntityShadowRenderer	();
+    @Unique
+    private static final Matrix3f SHADOW_NORMAL_MATRIX = new Matrix3f().identity();
+    @Unique
+    private static final AcceleratedEntityShadowRenderer SHADOW_RENDERER = new AcceleratedEntityShadowRenderer();
 
-	@Inject(
-			method		= "renderBlockShadow",
-			at			= @At("HEAD"),
-			cancellable	= true
-	)
-	private static void fastBlockShadow(
-			PoseStack.Pose	pPose,
-			VertexConsumer	pVertexConsumer,
-			ChunkAccess		pChunk,
-			LevelReader		pLevel,
-			BlockPos		pPos,
-			double			pX,
-			double			pY,
-			double			pZ,
-			float			pSize,
-			float			pWeight,
-			CallbackInfo	ci
-	) {
-		var extension = pVertexConsumer.getAccelerated();
+    @Inject(
+            method = "renderBlockShadow",
+            at = @At("HEAD"),
+            cancellable = true
+    )
+    private static void fastBlockShadow(
+            PoseStack.Pose pPose,
+            VertexConsumer pVertexConsumer,
+            ChunkAccess pChunk,
+            LevelReader pLevel,
+            BlockPos pPos,
+            double pX,
+            double pY,
+            double pZ,
+            float pSize,
+            float pWeight,
+            CallbackInfo ci
+    ) {
+        var extension = pVertexConsumer.getAccelerated();
 
-		if (		CoreFeature							.isRenderingLevel				()
-				&&	AcceleratedEntityRenderingFeature	.isEnabled						()
-				&&	AcceleratedEntityRenderingFeature	.shouldUseAcceleratedPipeline	()
-				&&	extension							.isAccelerated					()
-		) {
-			ci			.cancel		();
-			extension	.doRender	(
-					SHADOW_RENDERER,
-					new AcceleratedEntityShadowRenderer.Context(
-							pLevel,
-							pChunk,
-							pPos,
-							new Vector3f(
-									(float) pX,
-									(float) pY,
-									(float) pZ
-							),
-							pSize,
-							pWeight
-					),
-					pPose.pose(),
-					SHADOW_NORMAL_MATRIX,
-					LightTexture	.FULL_BRIGHT,
-					OverlayTexture	.NO_OVERLAY,
-					-1
-			);
-		}
-	}
+        if (CoreFeature.isRenderingLevel()
+                && AcceleratedEntityRenderingFeature.isEnabled()
+                && AcceleratedEntityRenderingFeature.shouldUseAcceleratedPipeline()
+                && extension.isAccelerated()
+        ) {
+            ci.cancel();
+            extension.doRender(
+                    SHADOW_RENDERER,
+                    new AcceleratedEntityShadowRenderer.Context(
+                            pLevel,
+                            pChunk,
+                            pPos,
+                            new Vector3f(
+                                    (float) pX,
+                                    (float) pY,
+                                    (float) pZ
+                            ),
+                            pSize,
+                            pWeight
+                    ),
+                    pPose.pose(),
+                    SHADOW_NORMAL_MATRIX,
+                    LightTexture.FULL_BRIGHT,
+                    OverlayTexture.NO_OVERLAY,
+                    -1
+            );
+        }
+    }
 }

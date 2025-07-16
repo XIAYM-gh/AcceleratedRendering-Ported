@@ -11,46 +11,46 @@ import net.minecraft.resources.ResourceLocation;
 
 public class OrientationCullingProgramDispatcher implements IPolygonProgramDispatcher {
 
-	private static  final int				GROUP_SIZE 			= 128;
-	private static	final int				DISPATCH_COUNT_Y_Z	= 1;
+    private static final int GROUP_SIZE = 128;
+    private static final int DISPATCH_COUNT_Y_Z = 1;
 
-	private			final VertexFormat.Mode	mode;
-	private			final ComputeProgram	program;
-	private			final Uniform			viewMatrixUniform;
-	private			final Uniform			projectMatrixUniform;
-	private			final Uniform			polygonCountUniform;
-	private			final Uniform			vertexOffsetUniform;
-	private			final Uniform			varyingOffsetUniform;
+    private final VertexFormat.Mode mode;
+    private final ComputeProgram program;
+    private final Uniform viewMatrixUniform;
+    private final Uniform projectMatrixUniform;
+    private final Uniform polygonCountUniform;
+    private final Uniform vertexOffsetUniform;
+    private final Uniform varyingOffsetUniform;
 
-	public OrientationCullingProgramDispatcher(VertexFormat.Mode mode, ResourceLocation key) {
-		this.mode					= mode;
-		this.program				= ComputeShaderProgramLoader.getProgram(key);
-		this.viewMatrixUniform		= this.program				.getUniform("viewMatrix");
-		this.projectMatrixUniform	= this.program				.getUniform("projectMatrix");
-		this.polygonCountUniform	= this.program				.getUniform("polygonCount");
-		this.vertexOffsetUniform	= this.program				.getUniform("vertexOffset");
-		this.varyingOffsetUniform	= this.program				.getUniform("varyingOffset");
-	}
+    public OrientationCullingProgramDispatcher(VertexFormat.Mode mode, ResourceLocation key) {
+        this.mode = mode;
+        this.program = ComputeShaderProgramLoader.getProgram(key);
+        this.viewMatrixUniform = this.program.getUniform("viewMatrix");
+        this.projectMatrixUniform = this.program.getUniform("projectMatrix");
+        this.polygonCountUniform = this.program.getUniform("polygonCount");
+        this.vertexOffsetUniform = this.program.getUniform("vertexOffset");
+        this.varyingOffsetUniform = this.program.getUniform("varyingOffset");
+    }
 
-	@Override
-	public int dispatch(AcceleratedBufferBuilder builder) {
-		var vertexCount		= builder.getTotalVertexCount	();
-		var polygonCount	= vertexCount / mode.primitiveLength;
+    @Override
+    public int dispatch(AcceleratedBufferBuilder builder) {
+        var vertexCount = builder.getTotalVertexCount();
+        var polygonCount = vertexCount / mode.primitiveLength;
 
-		viewMatrixUniform	.uploadMatrix4f		(RenderSystem	.getModelViewMatrix	());
-		projectMatrixUniform.uploadMatrix4f		(RenderSystem	.getProjectionMatrix());
-		polygonCountUniform	.uploadUnsignedInt	(polygonCount);
-		vertexOffsetUniform	.uploadUnsignedInt	((int) builder	.getVertexBuffer	().getOffset());
-		varyingOffsetUniform.uploadUnsignedInt	((int) builder	.getVaryingBuffer	().getOffset());
+        viewMatrixUniform.uploadMatrix4f(RenderSystem.getModelViewMatrix());
+        projectMatrixUniform.uploadMatrix4f(RenderSystem.getProjectionMatrix());
+        polygonCountUniform.uploadUnsignedInt(polygonCount);
+        vertexOffsetUniform.uploadUnsignedInt((int) builder.getVertexBuffer().getOffset());
+        varyingOffsetUniform.uploadUnsignedInt((int) builder.getVaryingBuffer().getOffset());
 
-		program.useProgram	();
-		program.dispatch	(
-				(polygonCount + GROUP_SIZE - 1) / GROUP_SIZE,
-				DISPATCH_COUNT_Y_Z,
-				DISPATCH_COUNT_Y_Z
-		);
-		program.resetProgram();
+        program.useProgram();
+        program.dispatch(
+                (polygonCount + GROUP_SIZE - 1) / GROUP_SIZE,
+                DISPATCH_COUNT_Y_Z,
+                DISPATCH_COUNT_Y_Z
+        );
+        program.resetProgram();
 
-		return program.getBarrierFlags();
-	}
+        return program.getBarrierFlags();
+    }
 }

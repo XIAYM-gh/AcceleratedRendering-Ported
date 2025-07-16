@@ -6,6 +6,7 @@ import org.joml.Matrix4f;
 
 public interface IAcceleratedBakedQuad {
 
-	void	renderFast		(Matrix4f	transform, Matrix3f normal, IAcceleratedVertexConsumer extension, int combinedLight, int combinedOverlay, int color);
-	int		getCustomColor	(int		color);
+    void renderFast(Matrix4f transform, Matrix3f normal, IAcceleratedVertexConsumer extension, int combinedLight, int combinedOverlay, int color);
+
+    int getCustomColor(int color);
 }

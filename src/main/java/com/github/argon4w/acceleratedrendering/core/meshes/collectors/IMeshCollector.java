@@ -6,7 +6,9 @@ import com.mojang.blaze3d.vertex.VertexFormatElement;
 
 public interface IMeshCollector {
 
-	ByteBufferBuilder					getBuffer		();
-	IMemoryLayout<VertexFormatElement>	getLayout		();
-	int									getVertexCount	();
+    ByteBufferBuilder getBuffer();
+
+    IMemoryLayout<VertexFormatElement> getLayout();
+
+    int getVertexCount();
 }

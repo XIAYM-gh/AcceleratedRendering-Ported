@@ -13,8 +13,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MinecraftMixin {
 
     @Inject(
-            method  = "<init>",
-            at      = @At("TAIL")
+            method = "<init>",
+            at = @At("TAIL")
     )
     public void setDebugContext(GameConfig gameConfig, CallbackInfo ci) {
         if (CoreFeature.isDebugContextEnabled()) {

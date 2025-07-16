@@ -29,124 +29,128 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.Map;
 
 @ExtensionMethod(VertexConsumerExtension.class)
-@Mixin			(BedrockPart			.class)
+@Mixin(BedrockPart.class)
 public class BedrockPartMixin implements IAcceleratedRenderer<Void> {
 
-	@Unique	private static	final	PoseStack.Pose				POSE			= new PoseStack().last();
-	@Unique private static	final	Vector3f[]					FIXED_NORMALS	= {
-			new Vector3f(-0.0f, -1.0f, -0.0f),
-			new Vector3f(+0.0f, +1.0f, +0.0f),
-			new Vector3f(-0.0f, -0.0f, -1.0f),
-			new Vector3f(+0.0f, +0.0f, +1.0f),
-			new Vector3f(-1.0f, -0.0f, -0.0f),
-			new Vector3f(+1.0f, +0.0f, +0.0f)
-	};
+    @Unique
+    private static final PoseStack.Pose POSE = new PoseStack().last();
+    @Unique
+    private static final Vector3f[] FIXED_NORMALS = {
+            new Vector3f(-0.0f, -1.0f, -0.0f),
+            new Vector3f(+0.0f, +1.0f, +0.0f),
+            new Vector3f(-0.0f, -0.0f, -1.0f),
+            new Vector3f(+0.0f, +0.0f, +1.0f),
+            new Vector3f(-1.0f, -0.0f, -0.0f),
+            new Vector3f(+1.0f, +0.0f, +0.0f)
+    };
+    @Unique
+    private final Map<IBufferGraph, IMesh> meshes = new Object2ObjectOpenHashMap<>();
+    @Shadow
+    @Final
+    public ObjectList<BedrockCube> cubes;
 
-	@Shadow @Final public			ObjectList<BedrockCube>		cubes;
+    @Inject(
+            method = "compile",
+            at = @At("HEAD"),
+            cancellable = true
+    )
+    public void compileFast(
+            PoseStack.Pose pose,
+            VertexConsumer consumer,
+            int texU,
+            int texV,
+            float red,
+            float green,
+            float blue,
+            float alpha,
+            CallbackInfo ci
+    ) {
+        var extension = consumer.getAccelerated();
 
-	@Unique private 		final	Map<IBufferGraph, IMesh>	meshes			= new Object2ObjectOpenHashMap<>();
+        if (CoreFeature.isRenderingLevel()
+                && AcceleratedEntityRenderingFeature.isEnabled()
+                && AcceleratedEntityRenderingFeature.shouldUseAcceleratedPipeline()
+                && extension.isAccelerated()
+        ) {
+            ci.cancel();
+            extension.doRender(
+                    this,
+                    null,
+                    pose.pose(),
+                    pose.normal(),
+                    texU,
+                    texV,
+                    FastColor.ARGB32.color(
+                            (int) (alpha * 255.0f),
+                            (int) (red * 255.0f),
+                            (int) (green * 255.0f),
+                            (int) (blue * 255.0f)
+                    )
+            );
+        }
+    }
 
-	@Inject(
-			method		= "compile",
-			at			= @At("HEAD"),
-			cancellable	= true
-	)
-	public void compileFast(
-			PoseStack.Pose	pose,
-			VertexConsumer	consumer,
-			int				texU,
-			int				texV,
-			float			red,
-			float			green,
-			float			blue,
-			float			alpha,
-			CallbackInfo	ci
-	) {
-		var extension = consumer.getAccelerated();
+    @Unique
+    @Override
+    public void render(
+            VertexConsumer vertexConsumer,
+            Void context,
+            Matrix4f transform,
+            Matrix3f normal,
+            int light,
+            int overlay,
+            int color
+    ) {
+        var extension = vertexConsumer.getAccelerated();
+        var mesh = meshes.get(extension);
 
-		if (		CoreFeature							.isRenderingLevel				()
-				&&	AcceleratedEntityRenderingFeature	.isEnabled						()
-				&&	AcceleratedEntityRenderingFeature	.shouldUseAcceleratedPipeline	()
-				&&	extension							.isAccelerated					()
-		) {
-			ci			.cancel		();
-			extension	.doRender	(
-					this,
-					null,
-					pose.pose				(),
-					pose.normal				(),
-					texU,
-					texV,
-					FastColor.ARGB32.color	(
-							(int) (alpha	* 255.0f),
-							(int) (red		* 255.0f),
-							(int) (green	* 255.0f),
-							(int) (blue		* 255.0f)
-					)
-			);
-		}
-	}
+        extension.beginTransform(transform, normal);
 
-	@Unique
-	@Override
-	public void render(
-			VertexConsumer	vertexConsumer,
-			Void			context,
-			Matrix4f		transform,
-			Matrix3f		normal,
-			int				light,
-			int				overlay,
-			int				color
-	) {
-		var extension	= vertexConsumer.getAccelerated	();
-		var mesh		= meshes		.get			(extension);
+        if (mesh != null) {
+            mesh.write(
+                    extension,
+                    color,
+                    light,
+                    overlay
+            );
 
-		extension.beginTransform(transform, normal);
+            extension.endTransform();
+            return;
+        }
 
-		if (mesh != null) {
-			mesh.write(
-					extension,
-					color,
-					light,
-					overlay
-			);
+        var culledMeshCollector = new CulledMeshCollector(extension.getRenderType(), extension.getBufferSet()
+                .getLayout());
+        var meshBuilder = extension.decorate(culledMeshCollector);
 
-			extension.endTransform();
-			return;
-		}
+        for (var cube : cubes) {
+            cube.compile(
+                    POSE,
+                    FIXED_NORMALS,
+                    meshBuilder,
+                    0,
+                    overlay,
+                    1.0f,
+                    1.0f,
+                    1.0f,
+                    1.0f
+            );
+        }
 
-		var culledMeshCollector	= new CulledMeshCollector	(extension.getRenderType(), extension.getBufferSet().getLayout());
-		var meshBuilder			= extension.decorate		(culledMeshCollector);
+        culledMeshCollector.flush();
 
-		for (var cube : cubes) {
-			cube.compile(
-					POSE,
-					FIXED_NORMALS,
-					meshBuilder,
-					0,
-					overlay,
-					1.0f,
-					1.0f,
-					1.0f,
-					1.0f
-			);
-		}
+        mesh = AcceleratedEntityRenderingFeature
+                .getMeshType()
+                .getBuilder()
+                .build(culledMeshCollector);
 
-		culledMeshCollector.flush();
+        meshes.put(extension, mesh);
+        mesh.write(
+                extension,
+                color,
+                light,
+                overlay
+        );
 
-		mesh = AcceleratedEntityRenderingFeature
-				.getMeshType()
-				.getBuilder	()
-				.build		(culledMeshCollector);
-
-		meshes	.put	(extension, mesh);
-		mesh	.write	(
-				extension,
-				color,
-				light,
-				overlay
-		);
-
-		extension.endTransform();
-	}
+        extension.endTransform();
+    }
 }

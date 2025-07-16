@@ -5,7 +5,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class ResourceLocationUtils {
 
-	public static ResourceLocation create(String path) {
-		return ResourceLocation.fromNamespaceAndPath(AcceleratedRenderingModEntry.MOD_ID, path);
-	}
+    public static ResourceLocation create(String path) {
+        return ResourceLocation.fromNamespaceAndPath(AcceleratedRenderingModEntry.MOD_ID, path);
+    }
 }

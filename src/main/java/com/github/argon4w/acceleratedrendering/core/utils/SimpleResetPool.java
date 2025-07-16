@@ -6,73 +6,75 @@ import java.util.Arrays;
 
 public abstract class SimpleResetPool<T, C> {
 
-	@Getter protected final	C			context;
+    @Getter
+    protected final C context;
+    protected int size;
+    protected Object[] pool;
+    private int cursor;
 
-	private					int			cursor;
-	protected 				int			size;
-	protected				Object[]	pool;
+    public SimpleResetPool(int size, C context) {
+        this.size = size;
+        this.pool = new Object[size];
+        this.context = context;
 
-	public SimpleResetPool(int size, C context) {
-		this.size		= size;
-		this.pool		= new Object[size];
-		this.context	= context;
+        this.cursor = 0;
 
-		this.cursor		= 0;
+        for (var i = 0; i < this.size; i++) {
+            this.pool[i] = create(this.context, i);
+        }
+    }
 
-		for (var i = 0; i < this.size; i++) {
-			this.pool[i] = create(this.context, i);
-		}
-	}
+    protected abstract T create(C context, int i);
 
-	protected abstract T	create	(C context, int i);
-	protected abstract void	reset	(T t);
-	protected abstract void	delete	(T t);
+    protected abstract void reset(T t);
 
-	@SuppressWarnings("unchecked")
-	public T get() {
-		if (cursor < size) {
-			var t = (T) pool[cursor ++];
+    protected abstract void delete(T t);
 
-			if (test(t)) {
-				return t;
-			}
-		}
+    @SuppressWarnings("unchecked")
+    public T get() {
+        if (cursor < size) {
+            var t = (T) pool[cursor++];
 
-		return fail();
-	}
+            if (test(t)) {
+                return t;
+            }
+        }
 
-	@SuppressWarnings("unchecked")
-	public void reset() {
-		for (var i = 0; i < cursor; i++) {
-			reset((T) pool[i]);
-		}
+        return fail();
+    }
 
-		cursor = 0;
-	}
+    @SuppressWarnings("unchecked")
+    public void reset() {
+        for (var i = 0; i < cursor; i++) {
+            reset((T) pool[i]);
+        }
 
-	@SuppressWarnings("unchecked")
-	public void delete() {
-		for (var i = 0; i < size; i++) {
-			delete((T) pool[i]);
-		}
-	}
+        cursor = 0;
+    }
 
-	protected void expand() {
-		var old	= size;
+    @SuppressWarnings("unchecked")
+    public void delete() {
+        for (var i = 0; i < size; i++) {
+            delete((T) pool[i]);
+        }
+    }
 
-		size	= old * 2;
-		pool	= Arrays.copyOf(pool, size);
+    protected void expand() {
+        var old = size;
 
-		for (var i = old; i < size; i ++) {
-			pool[i] = create(context, i);
-		}
-	}
+        size = old * 2;
+        pool = Arrays.copyOf(pool, size);
 
-	public T fail() {
-		return null;
-	}
+        for (var i = old; i < size; i++) {
+            pool[i] = create(context, i);
+        }
+    }
 
-	public boolean test(T t) {
-		return true;
-	}
+    public T fail() {
+        return null;
+    }
+
+    public boolean test(T t) {
+        return true;
+    }
 }

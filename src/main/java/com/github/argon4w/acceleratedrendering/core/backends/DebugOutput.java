@@ -5,7 +5,7 @@ import static org.lwjgl.opengl.GL46.glEnable;
 
 public class DebugOutput {
 
-	public static void enable() {
-		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-	}
+    public static void enable() {
+        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+    }
 }

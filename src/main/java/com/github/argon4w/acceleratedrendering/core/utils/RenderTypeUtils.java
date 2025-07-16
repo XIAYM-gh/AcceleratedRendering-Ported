@@ -5,34 +5,34 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderTypeUtils {
 
-	public static ResourceLocation getTextureLocation(RenderType renderType) {
-		if (renderType == null) {
-			return null;
-		}
+    public static ResourceLocation getTextureLocation(RenderType renderType) {
+        if (renderType == null) {
+            return null;
+        }
 
-		if (!(renderType instanceof RenderType.CompositeRenderType composite)) {
-			return null;
-		}
+        if (!(renderType instanceof RenderType.CompositeRenderType composite)) {
+            return null;
+        }
 
-		return composite
-				.state
-				.textureState
-				.cutoutTexture()
-				.orElse(null);
-	}
+        return composite
+                .state
+                .textureState
+                .cutoutTexture()
+                .orElse(null);
+    }
 
-	public static boolean isCulled(RenderType renderType) {
-		if (renderType == null) {
-			return false;
-		}
+    public static boolean isCulled(RenderType renderType) {
+        if (renderType == null) {
+            return false;
+        }
 
-		if (!(renderType instanceof RenderType.CompositeRenderType composite)) {
-			return false;
-		}
+        if (!(renderType instanceof RenderType.CompositeRenderType composite)) {
+            return false;
+        }
 
-		return composite
-				.state
-				.cullState
-				.enabled;
-	}
+        return composite
+                .state
+                .cullState
+                .enabled;
+    }
 }

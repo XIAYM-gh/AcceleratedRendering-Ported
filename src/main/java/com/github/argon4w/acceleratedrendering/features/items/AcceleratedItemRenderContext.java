@@ -22,7 +22,8 @@ public class AcceleratedItemRenderContext {
             RandomSource random
     ) {
         this.itemStack = itemStack;
-        this.itemColor = ((ItemColorsAccessor) Minecraft.getInstance().getItemColors()).getItemColors().getOrDefault(itemStack.getItem(), EmptyItemColor.INSTANCE);
+        this.itemColor = ((ItemColorsAccessor) Minecraft.getInstance().getItemColors()).getItemColors()
+                .getOrDefault(itemStack.getItem(), EmptyItemColor.INSTANCE);
         this.bakedModel = bakedModel;
         this.random = random;
     }

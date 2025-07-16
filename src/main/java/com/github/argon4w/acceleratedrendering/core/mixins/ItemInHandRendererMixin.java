@@ -12,23 +12,23 @@ import org.spongepowered.asm.mixin.Mixin;
 @Mixin(ItemInHandRenderer.class)
 public class ItemInHandRendererMixin {
 
-	@WrapMethod(method = "renderHandsWithItems")
-	public void wrapRenderHandsWithItems(
-			float							partialTicks,
-			PoseStack						poseStack,
-			MultiBufferSource.BufferSource	buffer,
-			LocalPlayer						playerEntity,
-			int								combinedLight,
-			Operation<Void>					original
-	) {
-		CoreFeature	.setRenderingHand	();
-		original	.call				(
-				partialTicks,
-				poseStack,
-				buffer,
-				playerEntity,
-				combinedLight
-		);
-		CoreFeature	.resetRenderingHand	();
-	}
+    @WrapMethod(method = "renderHandsWithItems")
+    public void wrapRenderHandsWithItems(
+            float partialTicks,
+            PoseStack poseStack,
+            MultiBufferSource.BufferSource buffer,
+            LocalPlayer playerEntity,
+            int combinedLight,
+            Operation<Void> original
+    ) {
+        CoreFeature.setRenderingHand();
+        original.call(
+                partialTicks,
+                poseStack,
+                buffer,
+                playerEntity,
+                combinedLight
+        );
+        CoreFeature.resetRenderingHand();
+    }
 }

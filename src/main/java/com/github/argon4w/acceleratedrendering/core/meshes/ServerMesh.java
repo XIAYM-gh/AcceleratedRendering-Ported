@@ -12,65 +12,65 @@ import static org.lwjgl.opengl.GL44.GL_DYNAMIC_STORAGE_BIT;
 
 public record ServerMesh(long size, IServerBuffer meshBuffer) implements IMesh {
 
-	@Override
-	public void write(
-			IAcceleratedVertexConsumer extension,
-			int color,
-			int light,
-			int overlay
-	) {
-		extension.addServerMesh(
-				this,
-				color,
-				light,
-				overlay
-		);
-	}
+    @Override
+    public void write(
+            IAcceleratedVertexConsumer extension,
+            int color,
+            int light,
+            int overlay
+    ) {
+        extension.addServerMesh(
+                this,
+                color,
+                light,
+                overlay
+        );
+    }
 
-	public static class Builder implements IMesh.Builder {
+    public static class Builder implements IMesh.Builder {
 
-		public static final Builder INSTANCE = new Builder();
+        public static final Builder INSTANCE = new Builder();
 
-		private final List<ServerMesh> meshes;
+        private final List<ServerMesh> meshes;
 
-		private Builder() {
-			this.meshes = new ObjectArrayList<>();
-		}
+        private Builder() {
+            this.meshes = new ObjectArrayList<>();
+        }
 
-		@Override
-		public IMesh build(IMeshCollector collector) {
-			var vertexCount = collector.getVertexCount();
+        @Override
+        public IMesh build(IMeshCollector collector) {
+            var vertexCount = collector.getVertexCount();
 
-			if (vertexCount == 0) {
-				return EmptyMesh.INSTANCE;
-			}
+            if (vertexCount == 0) {
+                return EmptyMesh.INSTANCE;
+            }
 
-			var builder	= collector	.getBuffer	();
-			var result	= builder	.build		();
+            var builder = collector.getBuffer();
+            var result = builder.build();
 
-			if (result == null) {
-				builder.close();
-				return EmptyMesh.INSTANCE;
-			}
+            if (result == null) {
+                builder.close();
+                return EmptyMesh.INSTANCE;
+            }
 
-			var clientBuffer	= result.byteBuffer	();
-			var serverBuffer	= new MutableBuffer	(clientBuffer.capacity(),	GL_DYNAMIC_STORAGE_BIT);
-			var mesh			= new ServerMesh	(vertexCount,				serverBuffer);
+            var clientBuffer = result.byteBuffer();
+            var serverBuffer = new MutableBuffer(clientBuffer.capacity(), GL_DYNAMIC_STORAGE_BIT);
+            var mesh = new ServerMesh(vertexCount, serverBuffer);
 
-			meshes		.add	(mesh);
-			serverBuffer.data	(clientBuffer);
-			builder		.close	();
+            meshes.add(mesh);
+            serverBuffer.data(clientBuffer);
+            builder.close();
 
-			return mesh;
-		}
+            return mesh;
+        }
 
-		@Override
-		public void close() {
-			for (var mesh : meshes) {
-				mesh
-						.meshBuffer
-						.delete();
-			}
-		}
-	}
+        @Override
+        public void close() {
+            for (var mesh : meshes) {
+                mesh
+                        .meshBuffer
+                        .delete();
+            }
+        }
+    }
 }

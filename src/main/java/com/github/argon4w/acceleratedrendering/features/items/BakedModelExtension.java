@@ -5,11 +5,11 @@ import net.minecraft.client.resources.model.BakedModel;
 
 public class BakedModelExtension {
 
-	public static IAcceleratedBakedModel getAccelerated(BakedModel in) {
-		return (IAcceleratedBakedModel) in;
-	}
+    public static IAcceleratedBakedModel getAccelerated(BakedModel in) {
+        return (IAcceleratedBakedModel) in;
+    }
 
-	public static IAcceleratedBakedQuad getAccelerated(BakedQuad in) {
-		return (IAcceleratedBakedQuad) in;
-	}
+    public static IAcceleratedBakedQuad getAccelerated(BakedQuad in) {
+        return (IAcceleratedBakedQuad) in;
+    }
 }

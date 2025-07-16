@@ -16,48 +16,52 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
-@ExtensionMethod(VertexConsumerExtension	.class)
-@Mixin			(SpriteCoordinateExpander	.class)
+@ExtensionMethod(VertexConsumerExtension.class)
+@Mixin(SpriteCoordinateExpander.class)
 public class SpriteCoordinateExpanderMixin implements IAcceleratedVertexConsumer {
 
-	@Shadow @Final private VertexConsumer		delegate;
-	@Shadow @Final private TextureAtlasSprite	sprite;
+    @Shadow
+    @Final
+    private VertexConsumer delegate;
+    @Shadow
+    @Final
+    private TextureAtlasSprite sprite;
 
-	@Unique
-	@Override
-	public VertexConsumer decorate(VertexConsumer buffer) {
-		return new AcceleratedSpriteCoordinateExpander(buffer, sprite);
-	}
+    @Unique
+    @Override
+    public VertexConsumer decorate(VertexConsumer buffer) {
+        return new AcceleratedSpriteCoordinateExpander(buffer, sprite);
+    }
 
-	@Unique
-	@Override
-	public boolean isAccelerated() {
-		return delegate
-				.getAccelerated	()
-				.isAccelerated	();
-	}
+    @Unique
+    @Override
+    public boolean isAccelerated() {
+        return delegate
+                .getAccelerated()
+                .isAccelerated();
+    }
 
-	@Unique
-	@Override
-	public <T>  void doRender(
-			IAcceleratedRenderer<T>	renderer,
-			T						context,
-			Matrix4f				transform,
-			Matrix3f				normal,
-			int						light,
-			int						overlay,
-			int						color
-	) {
-		delegate
-				.getAccelerated	()
-				.doRender		(
-						new DecoratedRenderer<>(renderer, this),
-						context,
-						transform,
-						normal,
-						light,
-						overlay,
-						color
-				);
-	}
+    @Unique
+    @Override
+    public <T> void doRender(
+            IAcceleratedRenderer<T> renderer,
+            T context,
+            Matrix4f transform,
+            Matrix3f normal,
+            int light,
+            int overlay,
+            int color
+    ) {
+        delegate
+                .getAccelerated()
+                .doRender(
+                        new DecoratedRenderer<>(renderer, this),
+                        context,
+                        transform,
+                        normal,
+                        light,
+                        overlay,
+                        color
+                );
+    }
 }

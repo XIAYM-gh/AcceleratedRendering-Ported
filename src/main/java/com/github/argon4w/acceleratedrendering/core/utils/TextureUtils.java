@@ -12,68 +12,68 @@ import static org.lwjgl.opengl.GL46.*;
 
 public class TextureUtils {
 
-	private static final Object2ObjectLinkedOpenHashMap<ResourceLocation, NativeImage> IMAGES = new Object2ObjectLinkedOpenHashMap<>();
+    private static final Object2ObjectLinkedOpenHashMap<ResourceLocation, NativeImage> IMAGES = new Object2ObjectLinkedOpenHashMap<>();
 
-	public static NativeImage downloadTexture(RenderType renderType, int mipmapLevel) {
-		var textureResourceLocation = RenderTypeUtils.getTextureLocation(renderType);
+    public static NativeImage downloadTexture(RenderType renderType, int mipmapLevel) {
+        var textureResourceLocation = RenderTypeUtils.getTextureLocation(renderType);
 
-		if (textureResourceLocation == null) {
-			return null;
-		}
+        if (textureResourceLocation == null) {
+            return null;
+        }
 
-		var image = IMAGES.getAndMoveToFirst(textureResourceLocation);
+        var image = IMAGES.getAndMoveToFirst(textureResourceLocation);
 
-		if (image != null) {
-			return image;
-		}
+        if (image != null) {
+            return image;
+        }
 
-		Minecraft
-				.getInstance		()
-				.getTextureManager	()
-				.getTexture			(textureResourceLocation)
-				.bind				();
+        Minecraft
+                .getInstance()
+                .getTextureManager()
+                .getTexture(textureResourceLocation)
+                .bind();
 
-		try (var stack = MemoryStack.stackPush()) {
-			var widthBuffer		= stack.callocInt(1);
-			var heightBuffer	= stack.callocInt(1);
+        try (var stack = MemoryStack.stackPush()) {
+            var widthBuffer = stack.callocInt(1);
+            var heightBuffer = stack.callocInt(1);
 
-			glGetTexLevelParameteriv(
-					GL_TEXTURE_2D,
-					mipmapLevel,
-					GL_TEXTURE_WIDTH,
-					widthBuffer
-			);
+            glGetTexLevelParameteriv(
+                    GL_TEXTURE_2D,
+                    mipmapLevel,
+                    GL_TEXTURE_WIDTH,
+                    widthBuffer
+            );
 
-			glGetTexLevelParameteriv(
-					GL_TEXTURE_2D,
-					mipmapLevel,
-					GL_TEXTURE_HEIGHT,
-					heightBuffer
-			);
+            glGetTexLevelParameteriv(
+                    GL_TEXTURE_2D,
+                    mipmapLevel,
+                    GL_TEXTURE_HEIGHT,
+                    heightBuffer
+            );
 
-			var width	= widthBuffer	.get(0);
-			var height	= heightBuffer	.get(0);
+            var width = widthBuffer.get(0);
+            var height = heightBuffer.get(0);
 
-			if (width == 0 || height == 0) {
-				return null;
-			}
+            if (width == 0 || height == 0) {
+                return null;
+            }
 
-			var nativeImage = new NativeImage(
-					width,
-					height,
-					false
-			);
+            var nativeImage = new NativeImage(
+                    width,
+                    height,
+                    false
+            );
 
-			nativeImage	.downloadTexture	(mipmapLevel,				false);
-			IMAGES		.putAndMoveToFirst	(textureResourceLocation,	nativeImage);
+            nativeImage.downloadTexture(mipmapLevel, false);
+            IMAGES.putAndMoveToFirst(textureResourceLocation, nativeImage);
 
-			if (IMAGES.size() > CoreFeature.getCachedImageSize()) {
-				IMAGES
-						.removeLast	()
-						.close		();
-			}
+            if (IMAGES.size() > CoreFeature.getCachedImageSize()) {
+                IMAGES
+                        .removeLast()
+                        .close();
+            }
 
-			return nativeImage;
-		}
-	}
+            return nativeImage;
+        }
+    }
 }

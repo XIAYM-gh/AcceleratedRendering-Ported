@@ -5,11 +5,12 @@ import com.github.argon4w.acceleratedrendering.core.meshes.collectors.IMeshColle
 
 public interface IMesh {
 
-	void write(IAcceleratedVertexConsumer extension, int color, int light, int overlay);
+    void write(IAcceleratedVertexConsumer extension, int color, int light, int overlay);
 
-	interface Builder {
+    interface Builder {
 
-		IMesh	build(IMeshCollector collector);
-		void	close();
-	}
+        IMesh build(IMeshCollector collector);
+
+        void close();
+    }
 }

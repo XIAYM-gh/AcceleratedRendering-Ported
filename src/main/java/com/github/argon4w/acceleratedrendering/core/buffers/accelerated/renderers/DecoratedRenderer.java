@@ -8,27 +8,27 @@ import org.joml.Matrix4f;
 @AllArgsConstructor
 public class DecoratedRenderer<T> implements IAcceleratedRenderer<T> {
 
-	private final IAcceleratedRenderer<T>	renderer;
-	private final IBufferDecorator			bufferDecorator;
+    private final IAcceleratedRenderer<T> renderer;
+    private final IBufferDecorator bufferDecorator;
 
-	@Override
-	public void render(
-			VertexConsumer	vertexConsumer,
-			T				context,
-			Matrix4f		transform,
-			Matrix3f		normal,
-			int				light,
-			int				overlay,
-			int				color
-	) {
-		renderer.render(
-				bufferDecorator.decorate(vertexConsumer),
-				context,
-				transform,
-				normal,
-				light,
-				overlay,
-				color
-		);
-	}
+    @Override
+    public void render(
+            VertexConsumer vertexConsumer,
+            T context,
+            Matrix4f transform,
+            Matrix3f normal,
+            int light,
+            int overlay,
+            int color
+    ) {
+        renderer.render(
+                bufferDecorator.decorate(vertexConsumer),
+                context,
+                transform,
+                normal,
+                light,
+                overlay,
+                color
+        );
+    }
 }

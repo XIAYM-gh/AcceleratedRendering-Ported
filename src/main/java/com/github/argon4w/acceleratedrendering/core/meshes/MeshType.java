@@ -5,12 +5,12 @@ import lombok.Getter;
 @Getter
 public enum MeshType {
 
-	SERVER(ServerMesh.Builder.INSTANCE),
-	CLIENT(ClientMesh.Builder.INSTANCE);
+    SERVER(ServerMesh.Builder.INSTANCE),
+    CLIENT(ClientMesh.Builder.INSTANCE);
 
-	private final IMesh.Builder builder;
+    private final IMesh.Builder builder;
 
-	MeshType(IMesh.Builder builder) {
-		this.builder = builder;
-	}
+    MeshType(IMesh.Builder builder) {
+        this.builder = builder;
+    }
 }

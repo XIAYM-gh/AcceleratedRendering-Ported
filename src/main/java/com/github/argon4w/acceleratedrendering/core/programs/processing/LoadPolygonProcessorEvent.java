@@ -9,18 +9,19 @@ import java.util.function.UnaryOperator;
 
 public class LoadPolygonProcessorEvent extends Event implements IModBusEvent {
 
-	private final	VertexFormat		vertexFormat;
+    private final VertexFormat vertexFormat;
 
-	@Getter private IPolygonProcessor	processor;
+    @Getter
+    private IPolygonProcessor processor;
 
-	public LoadPolygonProcessorEvent(VertexFormat vertexFormat) {
-		this.vertexFormat	= vertexFormat;
-		this.processor		= EmptyPolygonProcessor.INSTANCE;
-	}
+    public LoadPolygonProcessorEvent(VertexFormat vertexFormat) {
+        this.vertexFormat = vertexFormat;
+        this.processor = EmptyPolygonProcessor.INSTANCE;
+    }
 
-	public void loadFor(VertexFormat vertexFormat, UnaryOperator<IPolygonProcessor> selector) {
-		if (this.vertexFormat == vertexFormat) {
-			this.processor = selector.apply(this.processor);
-		}
-	}
+    public void loadFor(VertexFormat vertexFormat, UnaryOperator<IPolygonProcessor> selector) {
+        if (this.vertexFormat == vertexFormat) {
+            this.processor = selector.apply(this.processor);
+        }
+    }
 }

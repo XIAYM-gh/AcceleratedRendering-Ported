@@ -5,54 +5,54 @@ import lombok.Getter;
 @Getter
 public class MutableSize {
 
-	protected boolean	resized;
-	protected long		size;
+    protected boolean resized;
+    protected long size;
 
-	public MutableSize(long initialSize) {
-		this.resized	= false;
-		this.size		= initialSize;
-	}
+    public MutableSize(long initialSize) {
+        this.resized = false;
+        this.size = initialSize;
+    }
 
-	public void expand(long bytes) {
-		if (bytes <= 0) {
-			return;
-		}
+    public void expand(long bytes) {
+        if (bytes <= 0) {
+            return;
+        }
 
-		beforeExpand();
-		onExpand	(bytes);
-		doExpand	(size, bytes);
+        beforeExpand();
+        onExpand(bytes);
+        doExpand(size, bytes);
 
-		resized	=	true;
-		size	+=	bytes;
+        resized = true;
+        size += bytes;
 
-		afterExpand();
-	}
+        afterExpand();
+    }
 
-	public void onExpand(long bytes) {
+    public void onExpand(long bytes) {
 
-	}
+    }
 
-	public void doExpand(long size, long bytes) {
+    public void doExpand(long size, long bytes) {
 
-	}
+    }
 
-	public void beforeExpand() {
+    public void beforeExpand() {
 
-	}
+    }
 
-	public void afterExpand() {
+    public void afterExpand() {
 
-	}
+    }
 
-	public void resize(long atLeast) {
-		resizeTo(Long.highestOneBit(atLeast) << 1);
-	}
+    public void resize(long atLeast) {
+        resizeTo(Long.highestOneBit(atLeast) << 1);
+    }
 
-	public void resizeTo(long newBufferSize) {
-		expand(newBufferSize - size);
-	}
+    public void resizeTo(long newBufferSize) {
+        expand(newBufferSize - size);
+    }
 
-	public void resetResized() {
-		resized = false;
-	}
+    public void resetResized() {
+        resized = false;
+    }
 }

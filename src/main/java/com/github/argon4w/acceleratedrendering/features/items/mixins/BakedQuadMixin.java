@@ -22,87 +22,92 @@ import java.util.Map;
 @Mixin(BakedQuad.class)
 public abstract class BakedQuadMixin implements IAcceleratedBakedQuad {
 
-	@Unique private static final	Map<int[], Map<IBufferGraph, IMesh>>	MESHES = new Reference2ObjectOpenHashMap<>();
+    @Unique
+    private static final Map<int[], Map<IBufferGraph, IMesh>> MESHES = new Reference2ObjectOpenHashMap<>();
 
-	@Shadow @Final protected		int[]									vertices;
+    @Shadow
+    @Final
+    protected int[] vertices;
 
-	@Shadow public abstract			boolean									isTinted();
+    @Shadow
+    public abstract boolean isTinted();
 
-	@Unique
-	@Override
-	public void renderFast(
-			Matrix4f					transform,
-			Matrix3f					normal,
-			IAcceleratedVertexConsumer	extension,
-			int							combinedLight,
-			int							combinedOverlay,
-			int							color
-	) {
-		var meshes = MESHES.get(vertices);
+    @Unique
+    @Override
+    public void renderFast(
+            Matrix4f transform,
+            Matrix3f normal,
+            IAcceleratedVertexConsumer extension,
+            int combinedLight,
+            int combinedOverlay,
+            int color
+    ) {
+        var meshes = MESHES.get(vertices);
 
-		if (meshes == null) {
-			meshes = new Object2ObjectOpenHashMap<>	();
-			MESHES.put								(vertices, meshes);
-		}
+        if (meshes == null) {
+            meshes = new Object2ObjectOpenHashMap<>();
+            MESHES.put(vertices, meshes);
+        }
 
-		var mesh = meshes.get(extension);
+        var mesh = meshes.get(extension);
 
-		if (mesh != null) {
-			mesh.write(
-					extension,
-					getCustomColor(color),
-					combinedLight,
-					combinedOverlay
-			);
-			return;
-		}
+        if (mesh != null) {
+            mesh.write(
+                    extension,
+                    getCustomColor(color),
+                    combinedLight,
+                    combinedOverlay
+            );
+            return;
+        }
 
-		var culledMeshCollector	= new CulledMeshCollector	(extension.getRenderType(), extension.getBufferSet().getLayout());
-		var meshBuilder			= extension.decorate		(culledMeshCollector);
+        var culledMeshCollector = new CulledMeshCollector(extension.getRenderType(), extension.getBufferSet()
+                .getLayout());
+        var meshBuilder = extension.decorate(culledMeshCollector);
 
-		for (var i = 0; i < vertices.length / 8; i++) {
-			var vertexOffset	= i * IQuadTransformer.STRIDE;
-			var posOffset		= vertexOffset + IQuadTransformer.POSITION;
-			var colorOffset		= vertexOffset + IQuadTransformer.COLOR;
-			var uv0Offset		= vertexOffset + IQuadTransformer.UV0;
-			var uv2Offset		= vertexOffset + IQuadTransformer.UV2;
-			var normalOffset	= vertexOffset + IQuadTransformer.NORMAL;
-			var packedNormal	= vertices[normalOffset];
+        for (var i = 0; i < vertices.length / 8; i++) {
+            var vertexOffset = i * IQuadTransformer.STRIDE;
+            var posOffset = vertexOffset + IQuadTransformer.POSITION;
+            var colorOffset = vertexOffset + IQuadTransformer.COLOR;
+            var uv0Offset = vertexOffset + IQuadTransformer.UV0;
+            var uv2Offset = vertexOffset + IQuadTransformer.UV2;
+            var normalOffset = vertexOffset + IQuadTransformer.NORMAL;
+            var packedNormal = vertices[normalOffset];
 
-			meshBuilder.addVertex(
-					Float.intBitsToFloat(vertices[posOffset + 0]),
-					Float.intBitsToFloat(vertices[posOffset + 1]),
-					Float.intBitsToFloat(vertices[posOffset + 2]),
-					vertices[colorOffset],
-					Float.intBitsToFloat(vertices[uv0Offset + 0]),
-					Float.intBitsToFloat(vertices[uv0Offset + 1]),
-					combinedOverlay,
-					vertices[uv2Offset],
-					((byte) (	packedNormal		& 0xFF)) / 127.0f,
-					((byte) ((	packedNormal >> 8)	& 0xFF)) / 127.0f,
-					((byte) ((	packedNormal >> 16)	& 0xFF)) / 127.0f
-			);
-		}
+            meshBuilder.addVertex(
+                    Float.intBitsToFloat(vertices[posOffset + 0]),
+                    Float.intBitsToFloat(vertices[posOffset + 1]),
+                    Float.intBitsToFloat(vertices[posOffset + 2]),
+                    vertices[colorOffset],
+                    Float.intBitsToFloat(vertices[uv0Offset + 0]),
+                    Float.intBitsToFloat(vertices[uv0Offset + 1]),
+                    combinedOverlay,
+                    vertices[uv2Offset],
+                    ((byte) (packedNormal & 0xFF)) / 127.0f,
+                    ((byte) ((packedNormal >> 8) & 0xFF)) / 127.0f,
+                    ((byte) ((packedNormal >> 16) & 0xFF)) / 127.0f
+            );
+        }
 
-		culledMeshCollector.flush();
+        culledMeshCollector.flush();
 
-		mesh = AcceleratedItemRenderingFeature
-				.getMeshType()
-				.getBuilder	()
-				.build		(culledMeshCollector);
+        mesh = AcceleratedItemRenderingFeature
+                .getMeshType()
+                .getBuilder()
+                .build(culledMeshCollector);
 
-		meshes	.put	(extension, mesh);
-		mesh	.write	(
-				extension,
-				getCustomColor(color),
-				combinedLight,
-				combinedOverlay
-		);
-	}
+        meshes.put(extension, mesh);
+        mesh.write(
+                extension,
+                getCustomColor(color),
+                combinedLight,
+                combinedOverlay
+        );
+    }
 
-	@Unique
-	@Override
-	public int getCustomColor(int color) {
-		return isTinted() ? color : -1;
-	}
+    @Unique
+    @Override
+    public int getCustomColor(int color) {
+        return isTinted() ? color : -1;
+    }
 }

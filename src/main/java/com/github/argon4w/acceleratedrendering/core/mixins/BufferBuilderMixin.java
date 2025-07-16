@@ -19,52 +19,55 @@ import org.spongepowered.asm.mixin.Unique;
 import java.util.function.Supplier;
 
 @ExtensionMethod(VertexConsumerExtension.class)
-@Mixin			(BufferBuilder			.class)
+@Mixin(BufferBuilder.class)
 public class BufferBuilderMixin implements IAccelerationHolder, IAcceleratedVertexConsumer {
 
-	@Unique private			RenderType					renderType		= null;
-	@Unique private			AcceleratedBufferSources	bufferSources	= null;
-	@Unique private final	Supplier<VertexConsumer>	acceleration	= Suppliers.memoize(() -> bufferSources.get(renderType));
+    @Unique
+    private RenderType renderType = null;
+    @Unique
+    private AcceleratedBufferSources bufferSources = null;
+    @Unique
+    private final Supplier<VertexConsumer> acceleration = Suppliers.memoize(() -> bufferSources.get(renderType));
 
-	@Unique
-	@Override
-	public VertexConsumer initAcceleration(RenderType renderType) {
-		this.renderType			= renderType;
-		this.bufferSources		= renderType.isOutline()
-				? CoreBuffers.OUTLINE
-				: CoreBuffers.getCoreBufferSourceSet();
+    @Unique
+    @Override
+    public VertexConsumer initAcceleration(RenderType renderType) {
+        this.renderType = renderType;
+        this.bufferSources = renderType.isOutline()
+                ? CoreBuffers.OUTLINE
+                : CoreBuffers.getCoreBufferSourceSet();
 
-		return (VertexConsumer) this;
-	}
+        return (VertexConsumer) this;
+    }
 
-	@Unique
-	@Override
-	public boolean isAccelerated() {
-		return acceleration.get() != null;
-	}
+    @Unique
+    @Override
+    public boolean isAccelerated() {
+        return acceleration.get() != null;
+    }
 
-	@Unique
-	@Override
-	public <T> void doRender(
-			IAcceleratedRenderer<T>	renderer,
-			T						context,
-			Matrix4f				transform,
-			Matrix3f				normal,
-			int						light,
-			int						overlay,
-			int						color
-	) {
-		acceleration
-				.get			()
-				.getAccelerated	()
-				.doRender		(
-						renderer,
-						context,
-						transform,
-						normal,
-						light,
-						overlay,
-						color
-				);
-	}
+    @Unique
+    @Override
+    public <T> void doRender(
+            IAcceleratedRenderer<T> renderer,
+            T context,
+            Matrix4f transform,
+            Matrix3f normal,
+            int light,
+            int overlay,
+            int color
+    ) {
+        acceleration
+                .get()
+                .getAccelerated()
+                .doRender(
+                        renderer,
+                        context,
+                        transform,
+                        normal,
+                        light,
+                        overlay,
+                        color
+                );
+    }
 }

@@ -15,90 +15,90 @@ import java.util.Set;
 
 public class AcceleratedBufferSources {
 
-	private final Map<VertexFormat, IAcceleratedBufferSource>	sources;
-	private final Set<VertexFormat.Mode>						validModes;
-	private final Set<String>									invalidNames;
-	private final boolean										canSort;
+    private final Map<VertexFormat, IAcceleratedBufferSource> sources;
+    private final Set<VertexFormat.Mode> validModes;
+    private final Set<String> invalidNames;
+    private final boolean canSort;
 
-	private AcceleratedBufferSources(
-			Map<VertexFormat, IAcceleratedBufferSource>	sources,
-			Set<VertexFormat.Mode>						validModes,
-			Set<String>									invalidNames,
-			boolean										canSort
-	) {
-		this.sources		= sources;
-		this.validModes		= validModes;
-		this.invalidNames	= invalidNames;
-		this.canSort		= canSort;
-	}
+    private AcceleratedBufferSources(
+            Map<VertexFormat, IAcceleratedBufferSource> sources,
+            Set<VertexFormat.Mode> validModes,
+            Set<String> invalidNames,
+            boolean canSort
+    ) {
+        this.sources = sources;
+        this.validModes = validModes;
+        this.invalidNames = invalidNames;
+        this.canSort = canSort;
+    }
 
-	public VertexConsumer get(RenderType pRenderType) {
-		if (			pRenderType		!= null
-				&& (	CoreFeature		.shouldForceAccelerateTranslucent	() || canSort || !pRenderType.sortOnUpload)
-				&&		validModes		.contains							(pRenderType.mode)
-				&& !	invalidNames	.contains							(pRenderType.name)
-				&&		sources.containsKey									(pRenderType.format)
-		) {
-			return sources
-					.get		(pRenderType.format)
-					.getBuffer	(pRenderType);
-		}
+    public static Builder builder() {
+        return new Builder();
+    }
 
-		return null;
-	}
+    public VertexConsumer get(RenderType pRenderType) {
+        if (pRenderType != null
+                && (CoreFeature.shouldForceAccelerateTranslucent() || canSort || !pRenderType.sortOnUpload)
+                && validModes.contains(pRenderType.mode)
+                && !invalidNames.contains(pRenderType.name)
+                && sources.containsKey(pRenderType.format)
+        ) {
+            return sources
+                    .get(pRenderType.format)
+                    .getBuffer(pRenderType);
+        }
 
-	public static Builder builder() {
-		return new Builder();
-	}
+        return null;
+    }
 
-	public static class Builder {
+    public static class Builder {
 
-		private final	Map<VertexFormat, IAcceleratedBufferSource>	sources;
-		private final	Set<VertexFormat.Mode>						validModes;
-		private final	Set<String>									invalidNames;
+        private final Map<VertexFormat, IAcceleratedBufferSource> sources;
+        private final Set<VertexFormat.Mode> validModes;
+        private final Set<String> invalidNames;
 
-		private			boolean										canSort;
+        private boolean canSort;
 
-		private Builder() {
-			this.sources		= new Object2ObjectOpenHashMap<>();
-			this.validModes		= new ReferenceOpenHashSet<>	();
-			this.invalidNames	= new ObjectOpenHashSet<>		();
+        private Builder() {
+            this.sources = new Object2ObjectOpenHashMap<>();
+            this.validModes = new ReferenceOpenHashSet<>();
+            this.invalidNames = new ObjectOpenHashSet<>();
 
-			this.canSort		= false;
-		}
+            this.canSort = false;
+        }
 
-		public Builder source(IAcceleratedBufferSource bufferSource) {
-			sources.putAll(Maps.asMap(
-					bufferSource
-							.getBufferEnvironment	()
-							.getVertexFormats		(),
-					$ -> bufferSource
-			));
-			return this;
-		}
+        public Builder source(IAcceleratedBufferSource bufferSource) {
+            sources.putAll(Maps.asMap(
+                    bufferSource
+                            .getBufferEnvironment()
+                            .getVertexFormats(),
+                    $ -> bufferSource
+            ));
+            return this;
+        }
 
-		public Builder mode(VertexFormat.Mode mode) {
-			validModes.add(mode);
-			return this;
-		}
+        public Builder mode(VertexFormat.Mode mode) {
+            validModes.add(mode);
+            return this;
+        }
 
-		public Builder invalid(String name) {
-			invalidNames.add(name);
-			return this;
-		}
+        public Builder invalid(String name) {
+            invalidNames.add(name);
+            return this;
+        }
 
-		public Builder canSort() {
-			canSort = true;
-			return this;
-		}
+        public Builder canSort() {
+            canSort = true;
+            return this;
+        }
 
-		public AcceleratedBufferSources build() {
-			return new AcceleratedBufferSources(
-					sources,
-					validModes,
-					invalidNames,
-					canSort
-			);
-		}
-	}
+        public AcceleratedBufferSources build() {
+            return new AcceleratedBufferSources(
+                    sources,
+                    validModes,
+                    invalidNames,
+                    canSort
+            );
+        }
+    }
 }

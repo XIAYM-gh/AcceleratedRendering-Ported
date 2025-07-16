@@ -12,16 +12,16 @@ import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import org.slf4j.Logger;
 
 @Mod(
-		value	= AcceleratedRenderingModEntry	.MOD_ID,
-		dist	= Dist							.CLIENT
+        value = AcceleratedRenderingModEntry.MOD_ID,
+        dist = Dist.CLIENT
 )
 public class AcceleratedRenderingModEntry {
 
-	public static final String MOD_ID = "acceleratedrendering";
-	public static final Logger LOGGER = LogUtils.getLogger();
+    public static final String MOD_ID = "acceleratedrendering";
+    public static final Logger LOGGER = LogUtils.getLogger();
 
-	public AcceleratedRenderingModEntry(IEventBus modEventBus, ModContainer modContainer) {
-		modContainer.registerConfig			(ModConfig.Type.CLIENT,			FeatureConfig.SPEC);
-		modContainer.registerExtensionPoint	(IConfigScreenFactory.class,	ConfigurationScreen::new);
-	}
+    public AcceleratedRenderingModEntry(IEventBus modEventBus, ModContainer modContainer) {
+        modContainer.registerConfig(ModConfig.Type.CLIENT, FeatureConfig.SPEC);
+        modContainer.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
+    }
 }

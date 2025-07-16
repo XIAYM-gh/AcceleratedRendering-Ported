@@ -27,155 +27,158 @@ import java.util.Set;
 
 public class IrisBufferEnvironment implements IBufferEnvironment {
 
-	private final IBufferEnvironment vanillaSubSet;
-	private final IBufferEnvironment irisSubSet;
+    private final IBufferEnvironment vanillaSubSet;
+    private final IBufferEnvironment irisSubSet;
 
-	public IrisBufferEnvironment(
-			IBufferEnvironment	vanillaSubSet,
-			VertexFormat		vanillaVertexFormat,
-			VertexFormat		irisVertexFormat,
-			ResourceLocation	meshUploadingProgramKey,
-			ResourceLocation	transformProgramKey
-	) {
-		this.vanillaSubSet	= vanillaSubSet;
-		this.irisSubSet		= new IrisSubSet(
-				vanillaVertexFormat,
-				irisVertexFormat,
-				meshUploadingProgramKey,
-				transformProgramKey
-		);
-	}
+    public IrisBufferEnvironment(
+            IBufferEnvironment vanillaSubSet,
+            VertexFormat vanillaVertexFormat,
+            VertexFormat irisVertexFormat,
+            ResourceLocation meshUploadingProgramKey,
+            ResourceLocation transformProgramKey
+    ) {
+        this.vanillaSubSet = vanillaSubSet;
+        this.irisSubSet = new IrisSubSet(
+                vanillaVertexFormat,
+                irisVertexFormat,
+                meshUploadingProgramKey,
+                transformProgramKey
+        );
+    }
 
-	private IBufferEnvironment getSubSet() {
-		return IrisApi.getInstance().isShaderPackInUse() && ImmediateState.isRenderingLevel ? irisSubSet : vanillaSubSet;
-	}
+    private IBufferEnvironment getSubSet() {
+        return IrisApi.getInstance()
+                .isShaderPackInUse() && ImmediateState.isRenderingLevel ? irisSubSet : vanillaSubSet;
+    }
 
-	@Override
-	public void setupBufferState() {
-		getSubSet().setupBufferState();
-	}
+    @Override
+    public void setupBufferState() {
+        getSubSet().setupBufferState();
+    }
 
-	@Override
-	public Set<VertexFormat> getVertexFormats() {
-		return irisSubSet.getVertexFormats();
-	}
+    @Override
+    public Set<VertexFormat> getVertexFormats() {
+        return irisSubSet.getVertexFormats();
+    }
 
-	@Override
-	public IExtraVertexData getExtraVertex(VertexFormat.Mode mode) {
-		return getSubSet().getExtraVertex(mode);
-	}
+    @Override
+    public IExtraVertexData getExtraVertex(VertexFormat.Mode mode) {
+        return getSubSet().getExtraVertex(mode);
+    }
 
-	@Override
-	public IMemoryLayout<VertexFormatElement> getLayout() {
-		return getSubSet().getLayout();
-	}
+    @Override
+    public IMemoryLayout<VertexFormatElement> getLayout() {
+        return getSubSet().getLayout();
+    }
 
-	@Override
-	public MeshUploadingProgramDispatcher selectMeshUploadingProgramDispatcher() {
-		return getSubSet().selectMeshUploadingProgramDispatcher();
-	}
+    @Override
+    public MeshUploadingProgramDispatcher selectMeshUploadingProgramDispatcher() {
+        return getSubSet().selectMeshUploadingProgramDispatcher();
+    }
 
-	@Override
-	public TransformProgramDispatcher selectTransformProgramDispatcher() {
-		return getSubSet().selectTransformProgramDispatcher();
-	}
+    @Override
+    public TransformProgramDispatcher selectTransformProgramDispatcher() {
+        return getSubSet().selectTransformProgramDispatcher();
+    }
 
-	@Override
-	public IPolygonProgramDispatcher selectCullProgramDispatcher(RenderType renderType) {
-		return getSubSet().selectCullProgramDispatcher(renderType);
-	}
+    @Override
+    public IPolygonProgramDispatcher selectCullProgramDispatcher(RenderType renderType) {
+        return getSubSet().selectCullProgramDispatcher(renderType);
+    }
 
-	@Override
-	public IPolygonProgramDispatcher selectProcessingProgramDispatcher(VertexFormat.Mode mode) {
-		return getSubSet().selectProcessingProgramDispatcher(mode);
-	}
+    @Override
+    public IPolygonProgramDispatcher selectProcessingProgramDispatcher(VertexFormat.Mode mode) {
+        return getSubSet().selectProcessingProgramDispatcher(mode);
+    }
 
-	@Override
-	public boolean isAccelerated(VertexFormat vertexFormat) {
-		return getSubSet().isAccelerated(vertexFormat);
-	}
+    @Override
+    public boolean isAccelerated(VertexFormat vertexFormat) {
+        return getSubSet().isAccelerated(vertexFormat);
+    }
 
-	@Override
-	public int getVertexSize() {
-		return getSubSet().getVertexSize();
-	}
+    @Override
+    public int getVertexSize() {
+        return getSubSet().getVertexSize();
+    }
 
-	public static class IrisSubSet implements IBufferEnvironment {
+    public static class IrisSubSet implements IBufferEnvironment {
 
-		private final VertexFormat							vanillaVertexFormat;
-		private final VertexFormat							irisVertexFormat;
-		private final IMemoryLayout<VertexFormatElement>	layout;
+        private final VertexFormat vanillaVertexFormat;
+        private final VertexFormat irisVertexFormat;
+        private final IMemoryLayout<VertexFormatElement> layout;
 
-		private final MeshUploadingProgramDispatcher		meshUploadingProgramDispatcher;
-		private final TransformProgramDispatcher			transformProgramDispatcher;
-		private final ICullingProgramSelector				cullingProgramSelector;
-		private final IPolygonProcessor						polygonProcessor;
+        private final MeshUploadingProgramDispatcher meshUploadingProgramDispatcher;
+        private final TransformProgramDispatcher transformProgramDispatcher;
+        private final ICullingProgramSelector cullingProgramSelector;
+        private final IPolygonProcessor polygonProcessor;
 
-		public IrisSubSet(
-				VertexFormat		vanillaVertexFormat,
-				VertexFormat		irisVertexFormat,
-				ResourceLocation	meshUploadingProgramKey,
-				ResourceLocation	transformProgramKey
+        public IrisSubSet(
+                VertexFormat vanillaVertexFormat,
+                VertexFormat irisVertexFormat,
+                ResourceLocation meshUploadingProgramKey,
+                ResourceLocation transformProgramKey
 
-		) {
-			this.vanillaVertexFormat			= vanillaVertexFormat;
-			this.irisVertexFormat				= irisVertexFormat;
-			this.layout							= new VertexFormatMemoryLayout		(irisVertexFormat);
+        ) {
+            this.vanillaVertexFormat = vanillaVertexFormat;
+            this.irisVertexFormat = irisVertexFormat;
+            this.layout = new VertexFormatMemoryLayout(irisVertexFormat);
 
-			this.meshUploadingProgramDispatcher	= new MeshUploadingProgramDispatcher(meshUploadingProgramKey);
-			this.transformProgramDispatcher		= new TransformProgramDispatcher	(transformProgramKey);
-			this.cullingProgramSelector			= ModLoader.postEventWithReturn		(new LoadCullingProgramSelectorEvent(this.irisVertexFormat)).getSelector();
-			this.polygonProcessor				= ModLoader.postEventWithReturn		(new LoadPolygonProcessorEvent		(this.irisVertexFormat)).getProcessor();
-		}
+            this.meshUploadingProgramDispatcher = new MeshUploadingProgramDispatcher(meshUploadingProgramKey);
+            this.transformProgramDispatcher = new TransformProgramDispatcher(transformProgramKey);
+            this.cullingProgramSelector = ModLoader.postEventWithReturn(new LoadCullingProgramSelectorEvent(this.irisVertexFormat))
+                    .getSelector();
+            this.polygonProcessor = ModLoader.postEventWithReturn(new LoadPolygonProcessorEvent(this.irisVertexFormat))
+                    .getProcessor();
+        }
 
-		@Override
-		public void setupBufferState() {
-			irisVertexFormat.setupBufferState();
-		}
+        @Override
+        public void setupBufferState() {
+            irisVertexFormat.setupBufferState();
+        }
 
-		@Override
-		public boolean isAccelerated(VertexFormat vertexFormat) {
-			return this.vanillaVertexFormat == vertexFormat || this.irisVertexFormat == vertexFormat;
-		}
+        @Override
+        public boolean isAccelerated(VertexFormat vertexFormat) {
+            return this.vanillaVertexFormat == vertexFormat || this.irisVertexFormat == vertexFormat;
+        }
 
-		@Override
-		public Set<VertexFormat> getVertexFormats() {
-			return Set.of(vanillaVertexFormat, irisVertexFormat);
-		}
+        @Override
+        public Set<VertexFormat> getVertexFormats() {
+            return Set.of(vanillaVertexFormat, irisVertexFormat);
+        }
 
-		@Override
-		public IExtraVertexData getExtraVertex(VertexFormat.Mode mode) {
-			return new CompositeExtraVertex(cullingProgramSelector.getExtraVertex(mode), polygonProcessor.getExtraVertex(mode));
-		}
+        @Override
+        public IExtraVertexData getExtraVertex(VertexFormat.Mode mode) {
+            return new CompositeExtraVertex(cullingProgramSelector.getExtraVertex(mode), polygonProcessor.getExtraVertex(mode));
+        }
 
-		@Override
-		public IMemoryLayout<VertexFormatElement> getLayout() {
-			return layout;
-		}
+        @Override
+        public IMemoryLayout<VertexFormatElement> getLayout() {
+            return layout;
+        }
 
-		@Override
-		public MeshUploadingProgramDispatcher selectMeshUploadingProgramDispatcher() {
-			return meshUploadingProgramDispatcher;
-		}
+        @Override
+        public MeshUploadingProgramDispatcher selectMeshUploadingProgramDispatcher() {
+            return meshUploadingProgramDispatcher;
+        }
 
-		@Override
-		public TransformProgramDispatcher selectTransformProgramDispatcher() {
-			return transformProgramDispatcher;
-		}
+        @Override
+        public TransformProgramDispatcher selectTransformProgramDispatcher() {
+            return transformProgramDispatcher;
+        }
 
-		@Override
-		public IPolygonProgramDispatcher selectCullProgramDispatcher(RenderType renderType) {
-			return cullingProgramSelector.select(renderType);
-		}
+        @Override
+        public IPolygonProgramDispatcher selectCullProgramDispatcher(RenderType renderType) {
+            return cullingProgramSelector.select(renderType);
+        }
 
-		@Override
-		public IPolygonProgramDispatcher selectProcessingProgramDispatcher(VertexFormat.Mode mode) {
-			return polygonProcessor.select(mode);
-		}
+        @Override
+        public IPolygonProgramDispatcher selectProcessingProgramDispatcher(VertexFormat.Mode mode) {
+            return polygonProcessor.select(mode);
+        }
 
-		@Override
-		public int getVertexSize() {
-			return irisVertexFormat.getVertexSize();
-		}
-	}
+        @Override
+        public int getVertexSize() {
+            return irisVertexFormat.getVertexSize();
+        }
+    }
 }
